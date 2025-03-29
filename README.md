@@ -1,6 +1,6 @@
-# Pocket Caster
+# Did you hear that?
 
-A fun, lightweight web player for your personal collection of podcasts, audio clips, AI-generated summaries, and other sound bites. It uses JSON feeds and saves your progress locally.
+A fun, lightweight web player for your personal collection of interesting audio clips, podcasts, AI-generated summaries, and other sound bites you want to keep track of. It uses JSON feeds and saves your progress locally.
 
 ## MVP Features
 
