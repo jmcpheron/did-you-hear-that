@@ -29,16 +29,16 @@
       "title": "Work Projects Audio",
       "tracks": [
         {
-          "id": "work_proj1",
-          "title": "Project Alpha Kickoff",
-          "description": "Initial meeting recording for Project Alpha.",
-          "audioUrl": "audio/placeholder_work1.mp3" 
+          "id": "work_beep",
+          "title": "Test Beep Sound",
+          "description": "A short beep sound effect from SoundJay.",
+          "audioUrl": "https://www.soundjay.com/buttons/beep-07a.mp3"
         },
         {
-          "id": "work_proj2",
-          "title": "Beta Feedback Session",
-          "description": "Discussion on the beta feedback received.",
-          "audioUrl": "audio/placeholder_work2.mp3"
+          "id": "work_roar",
+          "title": "MDN Roar Sample",
+          "description": "A T-Rex roar audio sample from MDN (CC0 license).",
+          "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"
         }
       ]
     }
