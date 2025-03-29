@@ -63,4 +63,11 @@ h1 {
 #track-list li.playing {
     font-weight: bold;
     background-color: #e0e0ff; /* Highlight playing track */
+}
+
+/* Style for the progress time text */
+.track-progress {
+    margin-left: 8px; /* Add some space between title and time */
+    font-size: 0.9em;
+    color: #666;
 } 
