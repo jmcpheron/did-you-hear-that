@@ -8,19 +8,19 @@
           "id": "episode1",
           "title": "Episode 1: Introduction",
           "description": "Welcome to our first episode where we introduce the topic.",
-          "audioUrl": "audio/openai-fm-coral-sports-coach.mp3"
+          "audioUrl": "sample_audio/openai-fm-coral-sports-coach.mp3"
         },
         {
           "id": "episode2",
           "title": "Episode 2: Deep Dive",
           "description": "In this episode, we take a deeper look into the subject matter.",
-          "audioUrl": "audio/openai-fm-coral-dramatic.mp3"
+          "audioUrl": "sample_audio/openai-fm-coral-dramatic.mp3"
         },
         {
           "id": "episode3",
           "title": "Episode 3: Guest Interview",
           "description": "Featuring a special guest discussing their experiences.",
-          "audioUrl": "audio/openai-fm-sage-connoisseur.mp3"
+          "audioUrl": "sample_audio/openai-fm-sage-connoisseur.mp3"
         }
       ]
     },

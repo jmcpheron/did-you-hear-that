@@ -13,13 +13,20 @@ A fun, lightweight web player for your personal collection of interesting audio 
 
 ```plaintext
 /
-├── index.html          # Main HTML structure
+├── index.html              # Main HTML structure
 ├── styles/
-│   └── style.css       # Basic styling
+│   └── style.css           # Basic styling
 ├── scripts/
-│   └── main.js         # Core application logic & playback
-└── data/
-    └── feed.json       # Metadata for audio tracks
+│   └── main.js             # Core application logic & playback
+├── data/
+│   └── feed.json           # Metadata for audio feeds/tracks
+├── sample_audio/           # Contains sample audio files (tracked by Git)
+│   └── *.mp3
+├── audio/                  # For **your** local audio files (ignored by Git)
+│   └── .gitignore          # Ignores contents of audio/
+├── run_server.py           # Simple Python HTTP server script
+├── LICENSE                 # Project license (MIT)
+└── README.md               # This file
 ```
 
 ## Quick Start
@@ -29,7 +36,7 @@ This section outlines how to set up the project structure and run the player loc
 ### Initial Setup
 
 1.  **Create Project Directory:** Make a new folder for your project.
-2.  **Create Files:** Inside the project folder, create the basic files and directories outlined in the **Project Structure** section above (`index.html`, `styles/style.css`, `scripts/main.js`, `data/feed.json`).
+2.  **Create Files:** Inside the project folder, create the basic files and directories outlined in the **Project Structure** section above (`index.html`, `styles/style.css`, `scripts/main.js`, `data/feed.json`, `sample_audio/*`, `audio/.gitignore`).
 3.  **Populate `data/feed.json`:** Add metadata for your audio tracks according to the **JSON Feed Structure** example.
 
 ### Local Development (After Setup)
@@ -52,7 +59,7 @@ This section outlines how to set up the project structure and run the player loc
 
 This project consists of static HTML, CSS, and JavaScript files, making it ideal for deployment on [GitHub Pages](https://pages.github.com/).
 
-1.  **Ensure code is committed:** Make sure all your latest changes (HTML, CSS, JS, `data/feed.json`, and local `audio/` files if used) are committed to your local Git repository.
+1.  **Ensure code is committed:** Make sure all your latest changes (HTML, CSS, JS, `data/feed.json`, and `sample_audio/*` files) are committed to your local Git repository.
 2.  **Create GitHub Repository:** Create a new repository on GitHub. Do *not* initialize it with a README, license, or .gitignore if you plan to push your existing repository.
 3.  **Link Local Repo to GitHub:** Follow the instructions provided by GitHub after creating the repository to push your existing local repository to GitHub. This usually involves commands like:
     ```bash
@@ -73,7 +80,7 @@ This project consists of static HTML, CSS, and JavaScript files, making it ideal
     *   Click "Save".
 5.  **Access Site:** GitHub Pages will build and deploy your site. It might take a minute or two. The URL will be provided in the Pages settings section, typically in the format `https://yourusername.github.io/your-repo-name/`.
 
-**Note:** Since this project loads local files (like `data/feed.json` and potentially `audio/*`), simply pushing these files to your GitHub repository will make them accessible to the deployed site via relative paths.
+**Note:** Since this project loads files like `data/feed.json` and `sample_audio/*` using relative paths, simply pushing these files to your GitHub repository makes them accessible to the deployed site. The `audio/` directory is ignored by Git by default and is intended for your private, local files.
 
 ## JSON Feed Structure (`data/feed.json`)
 
@@ -101,14 +108,17 @@ The player expects a JSON file structured like this:
 
 ## Sample Audio Content
 
-The sample `data/feed.json` file included in this repository uses audio from different sources for demonstration purposes:
+The sample `data/feed.json` file included in this repository uses audio from different sources for demonstration purposes. Some tracks reference files within the `sample_audio/` directory.
 
-*   **Default Fun Stuff Feed:** The audio files referenced in this feed (e.g., `openai-fm-coral-sports-coach.mp3`) were generated using a demo of OpenAI's audio generation technology, with permission according to their content generation guidelines. **Note:** As per OpenAI's terms, this audio content is AI-generated.
+*   **Default Fun Stuff Feed:** The audio files referenced in this feed (e.g., `sample_audio/openai-fm-coral-sports-coach.mp3`) were generated using a demo of OpenAI's audio generation technology, with permission according to their content generation guidelines. **Note:** As per OpenAI's terms, this audio content is AI-generated.
 *   **Work Projects Audio Feed:** This feed uses publicly accessible audio samples for testing CDN/remote URL functionality:
     *   "Test Beep Sound": From [SoundJay.com](https://www.soundjay.com/) (check their specific license terms if using long-term).
     *   "MDN Roar Sample": From [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#examples) under a CC0 license.
 
-When adding your own content, ensure you have the necessary rights or licenses for the audio files you use.
+When adding your own content, you can:
+*   Place your MP3s in the `audio/` directory (they won't be tracked by Git) and update `data/feed.json` to point to them using relative paths like `"audio/your_file.mp3"`.
+*   Use full URLs to files hosted on a CDN or elsewhere.
+*   Ensure you have the necessary rights or licenses for the audio files you use.
 
 ## Future Enhancements (Potential)
 
