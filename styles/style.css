@@ -1,0 +1,66 @@
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+
+#audio-player-container {
+    max-width: 700px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+#player-controls {
+    margin-bottom: 20px;
+    text-align: center; /* Center the default audio controls */
+}
+
+#player-controls audio {
+    width: 100%; /* Make audio player take full width */
+}
+
+#current-track-info {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #eef;
+    border-radius: 5px;
+}
+
+#current-track-info h2 {
+    margin-top: 0;
+    color: #555;
+}
+
+#track-list-container h2 {
+    color: #555;
+}
+
+#track-list {
+    list-style: none;
+    padding: 0;
+}
+
+#track-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#track-list li:hover {
+    background-color: #f0f0f0;
+}
+
+#track-list li.playing {
+    font-weight: bold;
+    background-color: #e0e0ff; /* Highlight playing track */
+} 

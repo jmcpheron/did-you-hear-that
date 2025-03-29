@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Audio Player</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+
+    <div id="audio-player-container">
+        <h1>Simple Audio Player</h1>
+
+        <div id="player-controls">
+            <audio id="audio-element" controls></audio>
+            <!-- We might replace the default controls later -->
+        </div>
+
+        <div id="current-track-info">
+            <h2 id="track-title">No track selected</h2>
+            <p id="track-description"></p> 
+        </div>
+
+        <div id="track-list-container">
+            <h2>Tracks / Episodes</h2>
+            <ul id="track-list">
+                <!-- Track list will be populated by JavaScript -->
+                <li>Loading tracks...</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script src="scripts/main.js"></script>
+</body>
+</html> 
