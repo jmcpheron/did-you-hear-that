@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Constants ---
+    const CUSTOM_FEEDS_LS_KEY = 'custom_feed_urls';
+
     // --- DOM Elements ---
     const audioElement = document.getElementById('audio-element');
     const trackListElement = document.getElementById('track-list');
@@ -11,9 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedSelect = document.getElementById('feed-select'); // New feed selector
     const speedControlsContainer = document.querySelector('.speed-controls');
     const speedButtons = document.querySelectorAll('.speed-button'); // Get all speed buttons
+    const feedUrlInput = document.getElementById('feed-url-input');
+    const addFeedButton = document.getElementById('add-feed-button');
 
     // --- State Variables ---
-    let allFeeds = []; // Holds the entire data structure {feeds: [...]} -> just the array
+    let allFeeds = []; // Holds the combined default and custom feeds
     let currentFeedId = null;
     let currentTracks = []; // Tracks of the currently selected feed
     let currentTrackId = null;
@@ -28,27 +33,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initialization ---
-    fetch('data/feed.json')
-        .then(response => {
+    // Replaced the direct fetch with a call to the new initializer
+    initializeFeeds();
+
+    async function initializeFeeds() {
+        console.log("Initializing feeds...");
+        feedSelect.innerHTML = '<option value="">Loading feeds...</option>'; // Show loading state
+        trackListElement.innerHTML = '<li>Loading...</li>';
+        resetPlayerUI();
+
+        let defaultFeeds = [];
+        let customFeeds = [];
+
+        // 1. Fetch Default Feed
+        try {
+            const response = await fetch('data/feed.json');
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error fetching default feed! status: ${response.status}`);
             }
-            return response.json();
-        })
-        .then(data => {
+            const data = await response.json();
             if (!data.feeds || !Array.isArray(data.feeds)) {
-                throw new Error('Invalid feed structure: Missing top-level "feeds" array.');
+                throw new Error('Invalid default feed structure: Missing top-level "feeds" array.');
             }
-            allFeeds = data.feeds;
+            defaultFeeds = data.feeds;
+            console.log("Default feeds loaded:", defaultFeeds);
+        } catch (error) {
+            console.error('Error loading default feed:', error);
+            // Continue without default feeds, maybe show error in UI?
+        }
+
+        // 2. Fetch Custom Feeds
+        const customFeedUrls = getCustomFeedUrls();
+        console.log("Custom feed URLs found:", customFeedUrls);
+
+        if (customFeedUrls.length > 0) {
+            const feedPromises = customFeedUrls.map(url => 
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error fetching custom feed! status: ${response.status}, URL: ${url}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data.feeds || !Array.isArray(data.feeds)) {
+                             throw new Error(`Invalid custom feed structure for URL: ${url}`);
+                        }
+                        // Add source URL for potential debugging/management later
+                        data.feeds.forEach(feed => feed.sourceUrl = url); 
+                        return { status: 'fulfilled', value: data.feeds, url: url }; 
+                    })
+                    .catch(error => {
+                        return { status: 'rejected', reason: error, url: url };
+                    })
+            );
+
+            // Using Promise.allSettled equivalent pattern
+            const results = await Promise.all(feedPromises);
+
+            results.forEach(result => {
+                if (result.status === 'fulfilled') {
+                    console.log(`Successfully loaded custom feed from ${result.url}:`, result.value);
+                    customFeeds.push(...result.value);
+                } else {
+                    console.error(`Failed to load or parse custom feed from ${result.url}:`, result.reason);
+                    // Optional: Notify user or remove problematic URL from storage here
+                }
+            });
+        }
+
+        // 3. Combine Feeds
+        // Simple concatenation. Could add logic here to prevent ID collisions if needed.
+        allFeeds = [...defaultFeeds, ...customFeeds];
+        console.log("All feeds combined:", allFeeds);
+
+        // 4. Populate UI and Load State
+        if (allFeeds.length > 0) {
             populateFeedSelector(allFeeds);
-            // Load last state (which includes selecting the last feed)
-            loadLastState();
-        })
-        .catch(error => {
-            console.error('Error fetching or parsing feed:', error);
-            trackListElement.innerHTML = '<li>Error loading tracks.</li>';
-            feedSelect.innerHTML = '<option value="">Error loading feeds</option>';
-        });
+            loadLastState(); // Load last selected feed/track/speed
+        } else {
+            console.error("No feeds available to display.");
+            feedSelect.innerHTML = '<option value="">No feeds found</option>';
+            trackListElement.innerHTML = '<li>No feeds available. Add one using a URL.</li>';
+        }
+    }
 
     // --- Feed Handling ---
     function populateFeedSelector(feeds) {
@@ -395,6 +463,98 @@ document.addEventListener('DOMContentLoaded', () => {
                 // No need to call resetPlayerUI() again, switchFeed already handled the reset initially.
             }
         }
+    }
+
+    // --- Custom Feed Management ---
+    function getCustomFeedUrls() {
+        const storedUrls = localStorage.getItem(CUSTOM_FEEDS_LS_KEY);
+        try {
+            return storedUrls ? JSON.parse(storedUrls) : [];
+        } catch (e) {
+            console.error("Error parsing custom feed URLs from Local Storage:", e);
+            localStorage.removeItem(CUSTOM_FEEDS_LS_KEY); // Clear corrupted data
+            return [];
+        }
+    }
+
+    function saveCustomFeedUrls(urls) {
+        // Basic check to ensure it's an array of strings
+        if (Array.isArray(urls) && urls.every(item => typeof item === 'string')) {
+            localStorage.setItem(CUSTOM_FEEDS_LS_KEY, JSON.stringify(urls));
+        } else {
+            console.error("Attempted to save invalid data format for custom feed URLs.");
+        }
+    }
+
+    // Helper to show notifications
+    function showFeedNotification(message, type = 'error') {
+        const notificationArea = document.getElementById('feed-notification');
+        notificationArea.textContent = message;
+        notificationArea.className = type; // Sets class to 'error' or 'success'
+        notificationArea.style.display = 'block'; // Make sure it's visible
+
+        // Optional: Hide after a few seconds
+        setTimeout(() => {
+            notificationArea.style.display = 'none';
+            notificationArea.textContent = '';
+            notificationArea.className = '';
+        }, 5000); // Hide after 5 seconds
+    }
+
+    async function handleAddFeed() {
+        const notificationArea = document.getElementById('feed-notification');
+        notificationArea.style.display = 'none'; // Clear previous messages
+
+        const url = feedUrlInput.value.trim();
+        if (!url) {
+            showFeedNotification("Please enter a feed URL.", 'error');
+            return;
+        }
+
+        // Basic URL format check
+        try {
+            new URL(url);
+        } catch (_) {
+            showFeedNotification("Invalid URL format.", 'error');
+            return;
+        }
+
+        // Pre-check feed
+        addFeedButton.disabled = true;
+        addFeedButton.textContent = 'Checking...';
+        let isValidFeed = false;
+        let errorDetail = '';
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
+            const data = await response.json();
+            if (!data.feeds || !Array.isArray(data.feeds)) throw new Error("Invalid feed structure (missing 'feeds' array)");
+            isValidFeed = true;
+        } catch (error) {
+            console.error("Error validating feed URL:", error);
+            errorDetail = error.message; 
+            // Error message construction moved below
+        }
+        addFeedButton.disabled = false;
+        addFeedButton.textContent = 'Add Feed';
+
+        if (!isValidFeed) {
+            showFeedNotification(`Failed to load or validate feed: ${errorDetail}. Check URL and format.`, 'error');
+            return;
+        }
+
+        // Add URL to storage
+        const currentUrls = getCustomFeedUrls();
+        if (currentUrls.includes(url)) {
+            showFeedNotification("This feed URL has already been added.", 'error');
+            return;
+        }
+
+        const newUrls = [...currentUrls, url];
+        saveCustomFeedUrls(newUrls);
+        feedUrlInput.value = '';
+        showFeedNotification("Feed added successfully! Refreshing list...", 'success');
+        initializeFeeds();
     }
 
 }); 

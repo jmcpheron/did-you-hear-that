@@ -157,28 +157,54 @@ h1 {
     font-variant-numeric: tabular-nums;
 }
 
-/* --- Feed Selector --- */
-#feed-selector-container {
-    margin-bottom: 20px;
-    text-align: center;
+/* --- Feed Management --- */
+#feed-management {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-#feed-selector-container label {
-    margin-right: 8px;
-    color: var(--text-muted);
-    /* font-weight: bold; */
+#feed-selector-container,
+#add-feed-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center; /* Center items horizontally */
 }
 
-#feed-select {
+#add-feed-container input[type="url"] {
+    flex-grow: 1; /* Allow input to take available space */
     padding: 6px 10px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    background-color: var(--secondary-bg);
     font-family: inherit;
     font-size: 0.9em;
-    min-width: 180px;
-    cursor: pointer;
+    max-width: 300px; /* Prevent it from getting too wide */
 }
+
+#add-feed-button {
+    padding: 6px 12px;
+    border: none;
+    background-color: var(--accent-color);
+    color: var(--secondary-bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+#add-feed-button:hover {
+    background-color: var(--accent-darker);
+}
+
+/* --- Feed Selector (specific adjustments if needed) --- */
+#feed-selector-container {
+    /* Existing styles seem okay, maybe just ensure centering */
+}
+
+/* --- End Feed Management --- */
 
 /* --- Current Track Info --- */
 #current-track-info {
@@ -353,4 +379,35 @@ footer a:hover {
     text-decoration: underline;
 }
 
-/* --- End Footer --- */ 
+/* --- End Footer --- */
+
+/* --- Feed Notification Area --- */
+#feed-notification {
+    padding: 10px 15px;
+    margin-top: 10px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+    display: none; /* Hidden by default */
+    border: 1px solid transparent;
+}
+
+#feed-notification.success {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Dark green */
+    border-color: #c3e6cb;
+    display: block;
+}
+
+#feed-notification.error {
+    background-color: #f8d7da; /* Light red */
+    color: #721c24; /* Dark red */
+    border-color: #f5c6cb;
+    display: block;
+}
+
+/* --- Feed Selector (specific adjustments if needed) --- */
+#feed-selector-container {
+    /* Existing styles seem okay, maybe just ensure centering */
+} 

@@ -15,11 +15,20 @@
         <!-- Removed .content-area wrapper -->
         <h1>Did you hear that?</h1>
 
-        <div id="feed-selector-container">
-             <label for="feed-select">Select Feed:</label>
-             <select id="feed-select">
-                 <option value="">Loading feeds...</option>
-             </select>
+        <div id="feed-management">
+            <div id="feed-selector-container">
+                 <label for="feed-select">Select Feed:</label>
+                 <select id="feed-select">
+                     <option value="">Loading feeds...</option>
+                 </select>
+            </div>
+            <div id="add-feed-container">
+                 <input type="url" id="feed-url-input" placeholder="Add feed URL (JSON format)" aria-label="Feed URL Input">
+                 <button id="add-feed-button">Add Feed</button>
+            </div>
+            <!-- Notification Area -->
+            <div id="feed-notification" role="status" aria-live="polite"></div>
+            <!-- Maybe add a list of custom feeds here later -->
         </div>
 
         <!-- Player UI elements moved up -->
