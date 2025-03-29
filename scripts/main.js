@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentTimeDisplay = document.getElementById('current-time');
     const totalDurationDisplay = document.getElementById('total-duration');
     const feedSelect = document.getElementById('feed-select'); // New feed selector
+    const speedControlsContainer = document.querySelector('.speed-controls');
+    const speedButtons = document.querySelectorAll('.speed-button'); // Get all speed buttons
 
     // --- State Variables ---
     let allFeeds = []; // Holds the entire data structure {feeds: [...]} -> just the array
@@ -142,6 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
              trackDescriptionElement.textContent = track.description || '';
              updatePlayingClass(trackId);
 
+             // Apply saved playback speed
+             const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
+             audioElement.playbackRate = savedSpeed;
+             updateSpeedButtonActiveState(savedSpeed);
+
              // Load saved position or default to 0
              const savedTime = localStorage.getItem(getLocalStorageKey('pos', track.id));
              audioElement.currentTime = savedTime ? parseFloat(savedTime) : 0;
@@ -243,6 +250,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Playback Speed Handling ---
+    function updateSpeedButtonActiveState(activeSpeed) {
+        speedButtons.forEach(button => {
+            const buttonSpeed = parseFloat(button.dataset.speed);
+            if (buttonSpeed === activeSpeed) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+    }
+
+    speedControlsContainer.addEventListener('click', (event) => {
+        if (event.target.classList.contains('speed-button')) {
+            const newSpeed = parseFloat(event.target.dataset.speed);
+            audioElement.playbackRate = newSpeed;
+            localStorage.setItem('last_playback_speed', newSpeed); // Save selected speed
+            updateSpeedButtonActiveState(newSpeed);
+        }
+    });
+
     // --- Event Listeners ---
     // Audio Element
     audioElement.addEventListener('loadedmetadata', () => {
@@ -328,63 +356,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadLastState() {
-        const lastFeedId = localStorage.getItem(getLocalStorageKey('feed_id')) || (allFeeds.length > 0 ? allFeeds[0].id : null);
-        
+        const lastFeedId = localStorage.getItem('last_played_feed_id') || (allFeeds.length > 0 ? allFeeds[0].id : null);
+        let successfullyLoadedFeed = false;
+    
         if (lastFeedId && allFeeds.some(f => f.id === lastFeedId)) {
-            // Set the dropdown value and trigger the feed switch logic
             feedSelect.value = lastFeedId;
-            switchFeed(lastFeedId); // This populates currentTracks
-
-            // Now try to load the last played track WITHIN that feed
-            const lastTrackIdInFeed = localStorage.getItem(getLocalStorageKey('track_id'));
-            if (lastTrackIdInFeed && currentTracks.some(t => t.id === lastTrackIdInFeed)) {
-                // Load the track details but don't auto-play
-                const track = currentTracks.find(t => t.id === lastTrackIdInFeed);
-                const savedTime = localStorage.getItem(getLocalStorageKey('pos', lastTrackIdInFeed));
-                const numericTime = savedTime ? parseFloat(savedTime) : 0;
-
-                currentTrackId = lastTrackIdInFeed; // Set current track ID
-                trackTitleElement.textContent = track.title;
-                trackDescriptionElement.textContent = track.description || '';
-                updatePlayingClass(lastTrackIdInFeed);
-                updatePlayPauseButton(false); // Start paused
-                currentTimeDisplay.textContent = formatTime(numericTime);
-
-                // Set src to allow metadata loading
-                audioElement.src = track.audioUrl;
-                
-                const handleMetadata = () => {
-                    currentTrackDuration = audioElement.duration;
-                    seekBar.max = currentTrackDuration;
-                    seekBar.value = numericTime;
-                    totalDurationDisplay.textContent = formatTime(currentTrackDuration);
-                    // Set time AGAIN after metadata ensures it sticks
-                    audioElement.currentTime = numericTime;
-                    updateProgressDisplay(lastTrackIdInFeed, numericTime, currentTrackDuration);
-                    // Update seek bar fill on load
-                    const percentage = currentTrackDuration > 0 ? (numericTime / currentTrackDuration) * 100 : 0;
-                    seekBar.style.setProperty('--seek-before-percent', `${percentage}%`);
-                    console.log(`Loaded last state: Feed ${lastFeedId}, Track ${lastTrackIdInFeed} at ${numericTime}s`);
-                };
-
-                 if (audioElement.readyState >= 1) {
-                     handleMetadata();
-                 } else {
-                     audioElement.addEventListener('loadedmetadata', handleMetadata, { once: true });
-                 }
-
-            } else {
-                 console.log(`No last played track found for feed ${lastFeedId}.`);
-                 resetPlayerUI(); // Reset if no specific track saved
-            }
+            switchFeed(lastFeedId); // Populates currentTracks and sets currentFeedId
+            successfullyLoadedFeed = true;
+        } else if (allFeeds.length > 0) {
+            // Default to the first feed if last one was invalid or not found
+            feedSelect.value = allFeeds[0].id;
+            switchFeed(allFeeds[0].id);
+            successfullyLoadedFeed = true;
+            console.log("Defaulting to first feed.");
         } else {
-            console.log("No valid last feed found or feeds not loaded.");
-            if (allFeeds.length > 0) {
-                // Default to the first feed if no state saved
-                feedSelect.value = allFeeds[0].id;
-                 switchFeed(allFeeds[0].id);
+            console.log("No feeds available to load state from.");
+            resetPlayerUI();
+            return; // Exit if no feeds
+        }
+    
+        // --- Apply Speed and Load Track (only if a feed was successfully loaded) ---
+        if (successfullyLoadedFeed) {
+            // Apply last saved speed
+            const lastSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
+            audioElement.playbackRate = lastSpeed;
+            updateSpeedButtonActiveState(lastSpeed);
+    
+            // Try to load the last played track WITHIN the loaded feed
+            // getLocalStorageKey now correctly uses currentFeedId set by switchFeed
+            const lastTrackId = localStorage.getItem(getLocalStorageKey('track_id')); 
+            const trackToLoad = lastTrackId ? currentTracks.find(t => t.id === lastTrackId) : null;
+    
+            if (trackToLoad) {
+                console.log(`Loading last track state: ${lastTrackId} from feed ${currentFeedId}`);
+                playTrack(lastTrackId, false); // Use existing function to load state without playing
+            } else {
+                console.log(`No specific last track saved or found for feed ${currentFeedId}.`);
+                // No need to call resetPlayerUI() again, switchFeed already handled the reset initially.
             }
-             resetPlayerUI(); // Ensure UI reset includes seek bar fill
         }
     }
 

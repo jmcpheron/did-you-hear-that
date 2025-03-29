@@ -296,4 +296,35 @@ h1 {
     .main-control { order: 2; width: auto; margin: 0; }
     #play-pause-button { font-size: 2.2em; }
     */
-} 
+}
+
+/* --- Playback Speed Controls --- */
+.speed-controls {
+    margin-top: 10px; /* Space above speed buttons */
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.speed-button {
+    background-color: var(--controls-bg);
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    padding: 5px 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    border-radius: 15px; /* Rounded corners */
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    min-width: 40px; /* Ensure consistent width */
+    text-align: center;
+}
+
+.speed-button.active,
+.speed-button:hover {
+    background-color: var(--accent-color);
+    color: var(--secondary-bg);
+    border-color: var(--accent-color);
+}
+
+/* --- End Playback Speed Controls --- */ 
