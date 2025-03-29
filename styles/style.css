@@ -70,4 +70,59 @@ h1 {
     margin-left: 8px; /* Add some space between title and time */
     font-size: 0.9em;
     color: #666;
+}
+
+/* --- Custom Player Controls --- */
+.custom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Space between controls */
+    margin-top: 10px;
+    width: 100%;
+}
+
+#play-pause-button {
+    background: none;
+    border: none;
+    font-size: 1.8em; /* Make button bigger */
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1; /* Prevent extra spacing */
+}
+
+#seek-bar {
+    flex-grow: 1; /* Allow seek bar to take up available space */
+    height: 8px;
+    cursor: pointer;
+    appearance: none; /* Override default look */
+    background: #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+/* Styling for the seek bar thumb (the draggable part) */
+#seek-bar::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #555;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#seek-bar::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #555;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none; /* Remove default border in Firefox */
+}
+
+.time-display {
+    font-size: 0.9em;
+    color: #333;
+    min-width: 40px; /* Prevent layout shifts */
+    text-align: center;
 } 

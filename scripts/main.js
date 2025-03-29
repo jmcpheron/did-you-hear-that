@@ -4,9 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const trackTitleElement = document.getElementById('track-title');
     const trackDescriptionElement = document.getElementById('track-description');
 
+    // New custom control elements
+    const playPauseButton = document.getElementById('play-pause-button');
+    const seekBar = document.getElementById('seek-bar');
+    const currentTimeDisplay = document.getElementById('current-time');
+    const totalDurationDisplay = document.getElementById('total-duration');
+
     let tracks = [];
     let currentTrackId = null;
     let currentTrackDuration = 0;
+    let isSeeking = false; // Flag to prevent timeupdate conflicts while dragging seek bar
 
     // --- Helper Function ---
     function formatTime(seconds) {
@@ -26,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             tracks = data.tracks;
             populateTrackList(tracks);
-            // Load last played track/position if available
             loadLastState();
         })
         .catch(error => {
@@ -82,10 +88,52 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedTime) {
             audioElement.currentTime = parseFloat(savedTime);
         }
-        // Update display immediately based on potentially saved time
-        updateProgressDisplay(trackId, audioElement.currentTime, audioElement.duration);
+        // Reset seek bar and time displays initially
+        seekBar.value = savedTime ? parseFloat(savedTime) : 0;
+        currentTimeDisplay.textContent = savedTime ? formatTime(parseFloat(savedTime)) : '0:00';
+        totalDurationDisplay.textContent = '--:--'; // Will be updated on loadedmetadata
 
-        audioElement.play().catch(e => console.error("Error playing audio:", e));
+        // Important: Play returns a Promise, handle potential errors/autoplay restrictions
+        const playPromise = audioElement.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                // Playback started successfully
+                updatePlayPauseButton(true); // Show pause icon
+            }).catch(error => {
+                // Autoplay was prevented.
+                console.error("Playback error or autoplay prevented:", error);
+                updatePlayPauseButton(false); // Show play icon
+                // Optionally alert the user that they might need to click play manually
+            });
+        }
+    }
+
+    function togglePlayPause() {
+        if (!currentTrackId) { // Don't do anything if no track is loaded
+            // Maybe load the first track?
+            if(tracks.length > 0) {
+                playTrack(tracks[0].id);
+            }
+            return;
+        }
+
+        if (audioElement.paused || audioElement.ended) {
+            audioElement.play().then(() => updatePlayPauseButton(true)).catch(e => console.error("Error playing:", e));
+        } else {
+            audioElement.pause();
+            updatePlayPauseButton(false);
+        }
+    }
+
+    function updatePlayPauseButton(isPlaying) {
+        if (isPlaying) {
+            playPauseButton.textContent = '⏸️'; // Pause symbol
+            playPauseButton.setAttribute('aria-label', 'Pause');
+        } else {
+            playPauseButton.textContent = '▶️'; // Play symbol
+            playPauseButton.setAttribute('aria-label', 'Play');
+        }
     }
 
     function updatePlayingClass(playingTrackId) {
@@ -117,7 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (previousTrackId) {
              const track = tracks.find(t => t.id === previousTrackId);
              const savedTime = parseFloat(localStorage.getItem(`audio_pos_${previousTrackId}`) || 0);
-             const duration = track?.duration || 0; // Use JSON duration if available
+             // Get duration from audio element if possible, else from track data
+             const duration = (audioElement.src === track?.audioUrl && audioElement.duration) 
+                              ? audioElement.duration 
+                              : (track?.duration || 0);
              updateProgressDisplay(previousTrackId, savedTime, duration);
         }
     }
@@ -126,29 +177,63 @@ document.addEventListener('DOMContentLoaded', () => {
     audioElement.addEventListener('loadedmetadata', () => {
         // Duration is now available
         currentTrackDuration = audioElement.duration;
+        seekBar.max = currentTrackDuration; // Set seek bar max value
+        totalDurationDisplay.textContent = formatTime(currentTrackDuration);
         if (currentTrackId) {
             updateProgressDisplay(currentTrackId, audioElement.currentTime, currentTrackDuration);
         }
     });
 
     audioElement.addEventListener('timeupdate', () => {
-        if (currentTrackId) {
+        if (!isSeeking && currentTrackId) { // Only update if user isn't actively dragging the seek bar
             const currentTime = audioElement.currentTime;
+            seekBar.value = currentTime; // Update seek bar position
+            currentTimeDisplay.textContent = formatTime(currentTime); // Update time display
             localStorage.setItem(`audio_pos_${currentTrackId}`, currentTime.toString());
             localStorage.setItem('last_played_track_id', currentTrackId);
-            // Use the duration we stored on loadedmetadata if available
             updateProgressDisplay(currentTrackId, currentTime, currentTrackDuration || audioElement.duration);
         }
     });
 
-     audioElement.addEventListener('ended', () => {
-         // Optionally: Reset progress when track finishes or move to next
-         if (currentTrackId) {
-             updateProgressDisplay(currentTrackId, 0, currentTrackDuration);
-             localStorage.setItem(`audio_pos_${currentTrackId}`, '0'); // Reset saved pos
-             // Add logic here to play next track if desired
-         }
-     });
+    audioElement.addEventListener('play', () => {
+        updatePlayPauseButton(true);
+    });
+
+    audioElement.addEventListener('pause', () => {
+        updatePlayPauseButton(false);
+    });
+
+    audioElement.addEventListener('ended', () => {
+        updatePlayPauseButton(false);
+        seekBar.value = 0; // Reset seek bar
+        currentTimeDisplay.textContent = formatTime(0);
+        if (currentTrackId) {
+            updateProgressDisplay(currentTrackId, 0, currentTrackDuration);
+            localStorage.setItem(`audio_pos_${currentTrackId}`, '0');
+        }
+        // Optionally play next track here
+    });
+
+    // Custom Control Listeners
+    playPauseButton.addEventListener('click', togglePlayPause);
+
+    seekBar.addEventListener('input', () => {
+        // Show the time tooltip while dragging, but don't update audio yet
+        isSeeking = true;
+        currentTimeDisplay.textContent = formatTime(seekBar.value);
+    });
+
+    seekBar.addEventListener('change', () => {
+        // User finished dragging/clicked the seek bar
+        audioElement.currentTime = parseFloat(seekBar.value);
+        isSeeking = false;
+        if (audioElement.paused) {
+             // If paused, play after seeking unless it was already at the end
+            if (audioElement.currentTime < audioElement.duration) {
+                togglePlayPause();
+            }
+        }
+    });
 
     // Optional: Save state when the page is about to unload
     window.addEventListener('beforeunload', () => {
@@ -163,46 +248,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lastPlayedId && tracks.some(t => t.id === lastPlayedId)) {
             const track = tracks.find(t => t.id === lastPlayedId);
             const savedTime = localStorage.getItem(`audio_pos_${lastPlayedId}`);
+            const numericTime = savedTime ? parseFloat(savedTime) : 0;
 
             currentTrackId = lastPlayedId;
-            audioElement.src = track.audioUrl;
+            audioElement.src = track.audioUrl; // Set src first
             trackTitleElement.textContent = track.title;
             trackDescriptionElement.textContent = track.description || '';
             updatePlayingClass(lastPlayedId);
 
-            if (savedTime) {
-                const numericTime = parseFloat(savedTime);
-                // Use a flag to prevent race condition with loadedmetadata setting time
-                let timeSetFromStorage = false;
+            // Set initial state of controls
+            updatePlayPauseButton(false);
+            currentTimeDisplay.textContent = formatTime(numericTime);
 
-                const setInitialTime = () => {
-                    if (!timeSetFromStorage) {
-                         audioElement.currentTime = numericTime;
-                         timeSetFromStorage = true;
-                         // Update display after setting time
-                         updateProgressDisplay(lastPlayedId, numericTime, audioElement.duration);
-                    }
-                };
+            const handleMetadata = () => {
+                 currentTrackDuration = audioElement.duration;
+                 seekBar.max = currentTrackDuration;
+                 seekBar.value = numericTime;
+                 totalDurationDisplay.textContent = formatTime(currentTrackDuration);
+                 // Crucially, set the currentTime *after* metadata is loaded
+                 audioElement.currentTime = numericTime;
+                 updateProgressDisplay(lastPlayedId, numericTime, currentTrackDuration);
+                 console.log(`Loaded last state: Track ${lastPlayedId} at ${numericTime}s. Duration: ${currentTrackDuration}s`);
+            };
 
-                // Try setting time immediately if metadata might already be loaded
-                if (audioElement.readyState >= 1) { // HAVE_METADATA or more
-                   setInitialTime();
-                }
-
-                // Always listen for loadedmetadata as a fallback or for initial load
-                audioElement.addEventListener('loadedmetadata', () => {
-                     setInitialTime();
-                     // Ensure duration is updated in display
-                     updateProgressDisplay(lastPlayedId, audioElement.currentTime, audioElement.duration);
-                 }, { once: true });
-
+            // If metadata is already loaded (e.g., navigating back)
+            if (audioElement.readyState >= 1) {
+                handleMetadata();
             } else {
-                // Update display even if no saved time (shows 0:00 / --:--)
-                updateProgressDisplay(lastPlayedId, 0, 0);
+                 // Otherwise, wait for it
+                audioElement.addEventListener('loadedmetadata', handleMetadata, { once: true });
             }
-            console.log(`Loaded last state: Track ${lastPlayedId} at ${savedTime || 0}s`);
+
         } else {
             console.log("No valid last state found.");
+            updatePlayPauseButton(false);
+            currentTimeDisplay.textContent = '0:00';
+            totalDurationDisplay.textContent = '--:--';
+            seekBar.value = 0;
+            seekBar.max = 0; // Ensure seek bar is reset
         }
     }
 
