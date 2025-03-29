@@ -1,0 +1,22 @@
+{
+  "feeds": [
+    {
+      "id": "sample-custom",
+      "title": "Sample Custom Feed",
+      "tracks": [
+        {
+          "id": "sample-track-1",
+          "title": "Getting Started with Custom Feeds",
+          "description": "This is an example of how to create your own feed for this player.",
+          "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"
+        },
+        {
+          "id": "sample-track-2",
+          "title": "Another Example Track",
+          "description": "Just showing that a feed can have multiple tracks.",
+          "audioUrl": "https://www.soundjay.com/buttons/beep-07a.mp3"
+        }
+      ]
+    }
+  ]
+} 

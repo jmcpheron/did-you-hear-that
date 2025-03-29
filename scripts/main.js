@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const speedButtons = document.querySelectorAll('.speed-button'); // Get all speed buttons
     const feedUrlInput = document.getElementById('feed-url-input');
     const addFeedButton = document.getElementById('add-feed-button');
+    const sampleFeedLink = document.getElementById('sample-feed-link');
 
     // --- State Variables ---
     let allFeeds = []; // Holds the combined default and custom feeds
@@ -127,6 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = feed.title;
             feedSelect.appendChild(option);
         });
+        
+        // Remove old listener to avoid duplicates
+        feedSelect.removeEventListener('change', handleFeedChange);
+        // Add listener
         feedSelect.addEventListener('change', handleFeedChange);
     }
 
@@ -607,4 +612,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Setting up event listeners
+    addFeedButton.addEventListener('click', handleAddFeed);
+    
+    // Set up sample feed link
+    sampleFeedLink.addEventListener('click', () => {
+        // Get current page location to build absolute URL to sample feed
+        const currentUrl = window.location.href;
+        const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+        const sampleFeedUrl = baseUrl + 'examples/sample-custom-feed.json';
+        
+        // Insert URL into input field and put focus on it
+        feedUrlInput.value = sampleFeedUrl;
+        feedUrlInput.focus();
+        // Optional: automatically trigger the add button
+        // addFeedButton.click();
+        
+        // Show a helpful notification
+        showFeedNotification('Sample feed URL inserted! Click "Add Feed" to use it.', 'success');
+    });
 }); 

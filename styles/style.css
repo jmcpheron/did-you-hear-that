@@ -199,6 +199,39 @@ h1 {
     background-color: var(--accent-darker);
 }
 
+.help-link {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.help-link:hover {
+    color: var(--accent-color);
+    background-color: var(--primary-bg);
+}
+
+#feed-suggestion {
+    font-size: 0.85em;
+    text-align: center;
+    margin-top: 5px;
+    color: var(--text-muted);
+}
+
+#feed-suggestion a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+#feed-suggestion a:hover {
+    text-decoration: underline;
+}
+
 /* --- Feed Selector (specific adjustments if needed) --- */
 #feed-selector-container {
     /* Existing styles seem okay, maybe just ensure centering */
