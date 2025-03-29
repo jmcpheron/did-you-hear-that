@@ -1,75 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
 body {
-    font-family: sans-serif;
+    /* font-family: sans-serif; */
+    font-family: 'Nunito', sans-serif;
     line-height: 1.6;
-    margin: 20px;
-    background-color: #f4f4f4;
+    margin: 0; /* Remove default margin */
+    padding: 20px;
+    /* background-color: #f4f4f4; */
+    background-color: #f8f9fa; /* Lighter gray */
+    color: #343a40; /* Darker text for contrast */
 }
 
 #audio-player-container {
     max-width: 700px;
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 40px auto; /* Add more top/bottom margin */
+    background: #ffffff;
+    padding: 25px 30px; /* Adjust padding */
+    border-radius: 12px; /* Slightly rounder corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    /* color: #333; */
+    color: #495057; /* Slightly muted heading */
+    margin-bottom: 30px; /* More space below title */
 }
 
+/* --- Player Controls --- */
 #player-controls {
-    margin-bottom: 20px;
-    text-align: center; /* Center the default audio controls */
-}
-
-#player-controls audio {
-    width: 100%; /* Make audio player take full width */
-}
-
-#current-track-info {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #eef;
-    border-radius: 5px;
-}
-
-#current-track-info h2 {
-    margin-top: 0;
-    color: #555;
-}
-
-#track-list-container h2 {
-    color: #555;
-}
-
-#track-list {
-    list-style: none;
-    padding: 0;
-}
-
-#track-list li {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-#track-list li:hover {
-    background-color: #f0f0f0;
-}
-
-#track-list li.playing {
-    font-weight: bold;
-    background-color: #e0e0ff; /* Highlight playing track */
-}
-
-/* Style for the progress time text */
-.track-progress {
-    margin-left: 8px; /* Add some space between title and time */
-    font-size: 0.9em;
-    color: #666;
+    margin-bottom: 25px;
+    text-align: center;
 }
 
 /* --- Custom Player Controls --- */
@@ -77,52 +38,169 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* Space between controls */
-    margin-top: 10px;
+    gap: 12px; /* Adjust gap */
+    margin-top: 15px;
     width: 100%;
+    background-color: #f1f3f5; /* Light bg for controls */
+    padding: 10px 15px;
+    border-radius: 8px;
 }
 
 #play-pause-button {
     background: none;
     border: none;
-    font-size: 1.8em; /* Make button bigger */
+    font-size: 2em; /* Slightly larger button */
     cursor: pointer;
-    padding: 5px;
-    line-height: 1; /* Prevent extra spacing */
+    padding: 0 5px; /* Adjust padding */
+    line-height: 1;
+    color: #17a2b8; /* Teal accent */
+    transition: color 0.2s ease;
+}
+
+#play-pause-button:hover {
+    color: #138496; /* Darker teal on hover */
 }
 
 #seek-bar {
-    flex-grow: 1; /* Allow seek bar to take up available space */
-    height: 8px;
+    flex-grow: 1;
+    height: 10px; /* Slightly thicker */
     cursor: pointer;
-    appearance: none; /* Override default look */
-    background: #ddd;
-    border-radius: 4px;
+    appearance: none;
+    /* background: #ddd; */
+    background: linear-gradient(to right, #17a2b8 0%, #17a2b8 var(--seek-before-percent, 0%), #dee2e6 var(--seek-before-percent, 0%), #dee2e6 100%); /* Teal progress fill */
+    border-radius: 5px; /* Match track radius */
     outline: none;
 }
 
-/* Styling for the seek bar thumb (the draggable part) */
+/* Style the thumb */
 #seek-bar::-webkit-slider-thumb {
     appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #555;
+    width: 18px;
+    height: 18px;
+    /* background: #555; */
+    background: #17a2b8; /* Teal thumb */
     border-radius: 50%;
     cursor: pointer;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
 }
 
 #seek-bar::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: #555;
+    width: 18px;
+    height: 18px;
+    /* background: #555; */
+    background: #17a2b8; /* Teal thumb */
     border-radius: 50%;
     cursor: pointer;
-    border: none; /* Remove default border in Firefox */
+    border: none;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
 }
 
 .time-display {
-    font-size: 0.9em;
-    color: #333;
-    min-width: 40px; /* Prevent layout shifts */
+    font-size: 0.95em;
+    /* color: #333; */
+    color: #495057;
+    min-width: 45px;
     text-align: center;
+    font-variant-numeric: tabular-nums; /* Keep numbers aligned */
+}
+
+/* --- Feed Selector --- */
+#feed-selector-container {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+#feed-selector-container label {
+    margin-right: 8px;
+    color: #495057;
+    font-weight: bold;
+}
+
+#feed-select {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background-color: #fff;
+    font-family: inherit; /* Use body font */
+    font-size: 0.95em;
+    min-width: 200px;
+    cursor: pointer;
+}
+
+/* --- Current Track Info --- */
+#current-track-info {
+    margin-bottom: 25px;
+    padding: 15px 20px;
+    /* background-color: #eef; */
+    background-color: #e9ecef; /* Light neutral background */
+    border-radius: 8px;
+}
+
+#current-track-info h2 {
+    margin-top: 0;
+    margin-bottom: 8px; /* Space below title */
+    /* color: #555; */
+    color: #343a40;
+    font-size: 1.2em;
+}
+
+#current-track-info p {
+    margin-bottom: 0;
+    font-size: 0.95em;
+    color: #495057;
+}
+
+/* --- Track List --- */
+#track-list-container h2 {
+    /* color: #555; */
+    color: #495057;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+#track-list {
+    list-style: none;
+    padding: 0;
+    border: 1px solid #dee2e6; /* Add subtle border */
+    border-radius: 8px;
+    overflow: hidden; /* Clip borders */
+}
+
+#track-list li {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef; /* Lighter separator */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex; /* Use flexbox for alignment */
+    justify-content: space-between; /* Push progress span to right */
+    align-items: center;
+}
+
+#track-list li:last-child {
+    border-bottom: none;
+}
+
+#track-list li:hover {
+    background-color: #f1f3f5;
+}
+
+#track-list li.playing {
+    font-weight: bold;
+    /* background-color: #e0e0ff; */
+    background-color: #cfefff; /* Light teal highlight */
+    color: #0a5868; /* Darker text for playing item */
+}
+
+/* Style for the progress time text in the list */
+.track-progress {
+    margin-left: 15px; /* More space */
+    font-size: 0.9em;
+    /* color: #666; */
+    color: #6c757d; /* Muted gray */
+    white-space: nowrap; /* Prevent wrapping */
+    font-variant-numeric: tabular-nums; /* Keep numbers aligned */
+}
+
+#track-list li.playing .track-progress {
+    color: #138496; /* Slightly darker teal for playing progress */
 } 

@@ -1,6 +1,6 @@
-# Simple Audio Player
+# Pocket Caster
 
-A lightweight, web-based player for audiobooks or podcasts hosted via JSON feeds. This MVP focuses on core playback functionality and progress saving using local storage.
+A fun, lightweight web player for your personal collection of podcasts, audio clips, AI-generated summaries, and other sound bites. It uses JSON feeds and saves your progress locally.
 
 ## MVP Features
 
@@ -50,12 +50,30 @@ This section outlines how to set up the project structure and run the player loc
 
 ### Deployment (Once Developed)
 
-This project is simple enough to be deployed easily to platforms like GitHub Pages:
+This project consists of static HTML, CSS, and JavaScript files, making it ideal for deployment on [GitHub Pages](https://pages.github.com/).
 
-1.  Initialize a Git repository in your project folder and commit your files.
-2.  Push your code to a new GitHub repository.
-3.  Enable GitHub Pages in your repository settings (Settings → Pages → Source). Choose the appropriate branch.
-4.  Your player will be live at `https://yourusername.github.io/your-repo-name/`.
+1.  **Ensure code is committed:** Make sure all your latest changes (HTML, CSS, JS, `data/feed.json`, and local `audio/` files if used) are committed to your local Git repository.
+2.  **Create GitHub Repository:** Create a new repository on GitHub. Do *not* initialize it with a README, license, or .gitignore if you plan to push your existing repository.
+3.  **Link Local Repo to GitHub:** Follow the instructions provided by GitHub after creating the repository to push your existing local repository to GitHub. This usually involves commands like:
+    ```bash
+    # Add the remote repository URL (replace with your actual URL)
+    git remote add origin https://github.com/yourusername/your-repo-name.git 
+    # Rename default branch to main (if needed)
+    git branch -M main 
+    # Push your code to GitHub
+    git push -u origin main 
+    ```
+4.  **Enable GitHub Pages:**
+    *   Go to your repository on GitHub.com.
+    *   Click on the "Settings" tab.
+    *   Navigate to the "Pages" section in the left sidebar.
+    *   Under "Build and deployment", select "Deploy from a branch" as the Source.
+    *   Choose the branch containing your code (usually `main`).
+    *   Select `/ (root)` as the folder.
+    *   Click "Save".
+5.  **Access Site:** GitHub Pages will build and deploy your site. It might take a minute or two. The URL will be provided in the Pages settings section, typically in the format `https://yourusername.github.io/your-repo-name/`.
+
+**Note:** Since this project loads local files (like `data/feed.json` and potentially `audio/*`), simply pushing these files to your GitHub repository will make them accessible to the deployed site via relative paths.
 
 ## JSON Feed Structure (`data/feed.json`)
 
@@ -80,6 +98,17 @@ The player expects a JSON file structured like this:
   ]
 }
 ```
+
+## Sample Audio Content
+
+The sample `data/feed.json` file included in this repository uses audio from different sources for demonstration purposes:
+
+*   **Default Fun Stuff Feed:** The audio files referenced in this feed (e.g., `openai-fm-coral-sports-coach.mp3`) were generated using a demo of OpenAI's audio generation technology, with permission according to their content generation guidelines. **Note:** As per OpenAI's terms, this audio content is AI-generated.
+*   **Work Projects Audio Feed:** This feed uses publicly accessible audio samples for testing CDN/remote URL functionality:
+    *   "Test Beep Sound": From [SoundJay.com](https://www.soundjay.com/) (check their specific license terms if using long-term).
+    *   "MDN Roar Sample": From [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#examples) under a CC0 license.
+
+When adding your own content, ensure you have the necessary rights or licenses for the audio files you use.
 
 ## Future Enhancements (Potential)
 

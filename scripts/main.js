@@ -216,7 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
          totalDurationDisplay.textContent = '--:--';
          seekBar.value = 0;
          seekBar.max = 0;
-         updatePlayingClass(null); // Clear highlight
+         seekBar.style.setProperty('--seek-before-percent', '0%');
+         updatePlayingClass(null);
      }
 
     // --- Progress & State Update ---
@@ -249,20 +250,26 @@ document.addEventListener('DOMContentLoaded', () => {
         seekBar.max = currentTrackDuration;
         totalDurationDisplay.textContent = formatTime(currentTrackDuration);
         if (currentTrackId) {
-            // Update list item progress too, ensuring duration is shown
             updateProgressDisplay(currentTrackId, audioElement.currentTime, currentTrackDuration);
+            // Update seek bar fill based on initial time
+            const percentage = currentTrackDuration > 0 ? (audioElement.currentTime / currentTrackDuration) * 100 : 0;
+            seekBar.style.setProperty('--seek-before-percent', `${percentage}%`);
         }
     });
 
     audioElement.addEventListener('timeupdate', () => {
         if (!isSeeking && currentTrackId) {
             const currentTime = audioElement.currentTime;
+            const duration = currentTrackDuration || audioElement.duration;
             seekBar.value = currentTime;
             currentTimeDisplay.textContent = formatTime(currentTime);
-            // Save feed-specific progress
             localStorage.setItem(getLocalStorageKey('pos', currentTrackId), currentTime.toString());
-            localStorage.setItem(getLocalStorageKey('track_id'), currentTrackId); // Save last track within feed
-            updateProgressDisplay(currentTrackId, currentTime, currentTrackDuration || audioElement.duration);
+            localStorage.setItem(getLocalStorageKey('track_id'), currentTrackId);
+            updateProgressDisplay(currentTrackId, currentTime, duration);
+
+            // Update seek bar fill percentage
+            const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+            seekBar.style.setProperty('--seek-before-percent', `${percentage}%`);
         }
     });
 
@@ -272,11 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePlayPauseButton(false);
         seekBar.value = 0;
         currentTimeDisplay.textContent = formatTime(0);
+        seekBar.style.setProperty('--seek-before-percent', '0%'); // Reset fill
         if (currentTrackId) {
             updateProgressDisplay(currentTrackId, 0, currentTrackDuration);
             localStorage.setItem(getLocalStorageKey('pos', currentTrackId), '0');
         }
-        // Add logic here for auto-play next track if desired
     });
 
     // Custom Controls
@@ -354,6 +361,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Set time AGAIN after metadata ensures it sticks
                     audioElement.currentTime = numericTime;
                     updateProgressDisplay(lastTrackIdInFeed, numericTime, currentTrackDuration);
+                    // Update seek bar fill on load
+                    const percentage = currentTrackDuration > 0 ? (numericTime / currentTrackDuration) * 100 : 0;
+                    seekBar.style.setProperty('--seek-before-percent', `${percentage}%`);
                     console.log(`Loaded last state: Feed ${lastFeedId}, Track ${lastTrackIdInFeed} at ${numericTime}s`);
                 };
 
@@ -374,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedSelect.value = allFeeds[0].id;
                  switchFeed(allFeeds[0].id);
             }
-             resetPlayerUI();
+             resetPlayerUI(); // Ensure UI reset includes seek bar fill
         }
     }
 
