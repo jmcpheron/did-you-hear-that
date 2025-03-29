@@ -15,4 +15,13 @@ Thumbs.db
 *.swp
 *~
 
+# Python virtual environment
+.venv/
+virtualenv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
 # Optional: Add any other files/folders you don't want to track 
