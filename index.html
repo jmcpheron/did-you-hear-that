@@ -39,7 +39,19 @@
             </div>
             <!-- Notification Area -->
             <div id="feed-notification" role="status" aria-live="polite"></div>
-            <!-- Maybe add a list of custom feeds here later -->
+            <!-- Custom feeds list (only visible when custom feeds exist) -->
+            <div id="custom-feeds-container">
+                <div class="custom-feeds-header">
+                    <h3>Your Custom Feeds</h3>
+                    <button id="toggle-custom-feeds-btn" aria-expanded="false" aria-controls="custom-feeds-list">
+                        <span class="toggle-icon">▼</span> Manage
+                    </button>
+                </div>
+                <ul id="custom-feeds-list" class="hidden">
+                    <!-- Custom feeds will be listed here dynamically -->
+                    <li class="empty-message">No custom feeds added yet.</li>
+                </ul>
+            </div>
         </div>
 
         <!-- Player UI elements moved up -->

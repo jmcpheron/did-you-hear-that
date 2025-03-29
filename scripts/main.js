@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedUrlInput = document.getElementById('feed-url-input');
     const addFeedButton = document.getElementById('add-feed-button');
     const sampleFeedLink = document.getElementById('sample-feed-link');
+    const customFeedsContainer = document.getElementById('custom-feeds-container');
+    const customFeedsList = document.getElementById('custom-feeds-list');
+    const toggleCustomFeedsBtn = document.getElementById('toggle-custom-feeds-btn');
 
     // --- State Variables ---
     let allFeeds = []; // Holds the combined default and custom feeds
@@ -117,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
             feedSelect.innerHTML = '<option value="">No feeds found</option>';
             trackListElement.innerHTML = '<li>No feeds available. Add one using a URL.</li>';
         }
+        
+        // 5. Update the custom feeds management UI
+        updateCustomFeedsList();
     }
 
     // --- Feed Handling ---
@@ -486,10 +492,137 @@ document.addEventListener('DOMContentLoaded', () => {
         // Basic check to ensure it's an array of strings
         if (Array.isArray(urls) && urls.every(item => typeof item === 'string')) {
             localStorage.setItem(CUSTOM_FEEDS_LS_KEY, JSON.stringify(urls));
+            // Update the UI to reflect changes
+            updateCustomFeedsList();
         } else {
             console.error("Attempted to save invalid data format for custom feed URLs.");
         }
     }
+    
+    // Function to update the custom feeds list in the UI
+    function updateCustomFeedsList() {
+        const customUrls = getCustomFeedUrls();
+        
+        // Show/hide the container based on whether there are custom feeds
+        if (customUrls.length > 0) {
+            customFeedsContainer.style.display = 'block';
+            
+            // Clear previous list
+            customFeedsList.innerHTML = '';
+            
+            // Get a map of feed IDs by source URL
+            const feedsByUrl = {};
+            
+            // Group feeds by their source URL
+            allFeeds.forEach(feed => {
+                if (feed.sourceUrl && customUrls.includes(feed.sourceUrl)) {
+                    if (!feedsByUrl[feed.sourceUrl]) {
+                        feedsByUrl[feed.sourceUrl] = [];
+                    }
+                    feedsByUrl[feed.sourceUrl].push(feed);
+                }
+            });
+            
+            // Add each custom feed to the list
+            customUrls.forEach(url => {
+                const li = document.createElement('li');
+                const feedsFromThisUrl = feedsByUrl[url] || [];
+                
+                const feedInfo = document.createElement('div');
+                feedInfo.className = 'feed-info';
+                
+                // Create title element (show feed titles or URL)
+                const titleElement = document.createElement('div');
+                titleElement.className = 'feed-title';
+                
+                if (feedsFromThisUrl.length > 0) {
+                    // Show the titles of feeds from this URL
+                    titleElement.textContent = feedsFromThisUrl
+                        .map(feed => feed.title)
+                        .join(', ');
+                } else {
+                    // If no feeds loaded (might be an error), just show "Custom Feed"
+                    titleElement.textContent = 'Custom Feed';
+                }
+                
+                // Create URL element
+                const urlElement = document.createElement('div');
+                urlElement.className = 'feed-url';
+                urlElement.textContent = url;
+                
+                // Add elements to feed info
+                feedInfo.appendChild(titleElement);
+                feedInfo.appendChild(urlElement);
+                
+                // Create delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '&times;'; // × symbol
+                deleteBtn.setAttribute('aria-label', 'Delete feed');
+                deleteBtn.dataset.url = url;
+                deleteBtn.addEventListener('click', handleDeleteFeed);
+                
+                // Add everything to the list item
+                li.appendChild(feedInfo);
+                li.appendChild(deleteBtn);
+                customFeedsList.appendChild(li);
+            });
+        } else {
+            customFeedsContainer.style.display = 'none';
+            customFeedsList.innerHTML = '<li class="empty-message">No custom feeds added yet.</li>';
+        }
+    }
+    
+    // Handle deletion of a feed
+    async function handleDeleteFeed(event) {
+        const urlToDelete = event.currentTarget.dataset.url;
+        
+        if (!urlToDelete) return;
+        
+        // Confirm deletion
+        if (!confirm(`Are you sure you want to delete this feed?\n\n${urlToDelete}`)) {
+            return;
+        }
+        
+        // Get current URLs and remove the one to delete
+        const currentUrls = getCustomFeedUrls();
+        const newUrls = currentUrls.filter(url => url !== urlToDelete);
+        
+        // Save updated URL list
+        saveCustomFeedUrls(newUrls);
+        
+        // Handle feeds that might be currently selected
+        const feedsToRemove = allFeeds.filter(feed => feed.sourceUrl === urlToDelete);
+        const feedIdsToRemove = feedsToRemove.map(feed => feed.id);
+        
+        // Check if currently selected feed is being removed
+        const isCurrentFeedRemoved = feedIdsToRemove.includes(currentFeedId);
+        
+        // Remove the feeds from allFeeds array
+        allFeeds = allFeeds.filter(feed => feed.sourceUrl !== urlToDelete);
+        
+        // Update the dropdown options
+        populateFeedSelector(allFeeds);
+        
+        // Show notification
+        showFeedNotification('Custom feed deleted successfully.', 'success');
+        
+        // If current feed was removed, switch to the first available feed
+        if (isCurrentFeedRemoved && allFeeds.length > 0) {
+            feedSelect.value = allFeeds[0].id;
+            handleFeedChange();
+        }
+        
+        // Update the UI
+        updateCustomFeedsList();
+    }
+    
+    // Toggle the visibility of the custom feeds list
+    toggleCustomFeedsBtn.addEventListener('click', () => {
+        const isExpanded = toggleCustomFeedsBtn.getAttribute('aria-expanded') === 'true';
+        toggleCustomFeedsBtn.setAttribute('aria-expanded', !isExpanded);
+        customFeedsList.classList.toggle('hidden');
+    });
 
     // Helper to show notifications
     function showFeedNotification(message, type = 'error') {
