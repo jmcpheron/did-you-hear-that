@@ -519,42 +519,92 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Pre-check feed
-        addFeedButton.disabled = true;
-        addFeedButton.textContent = 'Checking...';
-        let isValidFeed = false;
-        let errorDetail = '';
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
-            const data = await response.json();
-            if (!data.feeds || !Array.isArray(data.feeds)) throw new Error("Invalid feed structure (missing 'feeds' array)");
-            isValidFeed = true;
-        } catch (error) {
-            console.error("Error validating feed URL:", error);
-            errorDetail = error.message; 
-            // Error message construction moved below
-        }
-        addFeedButton.disabled = false;
-        addFeedButton.textContent = 'Add Feed';
-
-        if (!isValidFeed) {
-            showFeedNotification(`Failed to load or validate feed: ${errorDetail}. Check URL and format.`, 'error');
-            return;
-        }
-
-        // Add URL to storage
+        // Check if URL already exists in storage before fetching
         const currentUrls = getCustomFeedUrls();
         if (currentUrls.includes(url)) {
             showFeedNotification("This feed URL has already been added.", 'error');
             return;
         }
 
-        const newUrls = [...currentUrls, url];
-        saveCustomFeedUrls(newUrls);
-        feedUrlInput.value = '';
-        showFeedNotification("Feed added successfully! Refreshing list...", 'success');
-        initializeFeeds();
+        // Pre-check feed
+        addFeedButton.disabled = true;
+        addFeedButton.textContent = 'Checking...';
+        let feedData = null; // Store the successfully fetched data
+        let errorDetail = '';
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
+            const data = await response.json();
+            if (!data.feeds || !Array.isArray(data.feeds) || data.feeds.length === 0) {
+                throw new Error("Invalid feed structure (missing or empty 'feeds' array)");
+            }
+            // Basic validation of first feed/track structure (optional but good)
+            const firstFeed = data.feeds[0];
+            if (!firstFeed.id || !firstFeed.title || !firstFeed.tracks) {
+                 throw new Error("Invalid feed structure (feed missing id, title, or tracks)");
+            }
+            if (firstFeed.tracks.length > 0) {
+                 const firstTrack = firstFeed.tracks[0];
+                 if (!firstTrack.id || !firstTrack.title || !firstTrack.audioUrl) {
+                     throw new Error("Invalid feed structure (track missing id, title, or audioUrl)");
+                 }
+            }
+            feedData = data; // Store the validated data
+        } catch (error) {
+            console.error("Error validating feed URL:", error);
+            errorDetail = error.message;
+        }
+        addFeedButton.disabled = false;
+        addFeedButton.textContent = 'Add Feed';
+
+        if (!feedData) { // Check if feedData was successfully assigned
+            showFeedNotification(`Failed to load or validate feed: ${errorDetail}. Check URL and format.`, 'error');
+            return;
+        }
+
+        // Add the new feed(s) interactively
+        let addedFeedId = null; // Keep track of the last added feed ID to select it
+        let feedAddedCount = 0;
+
+        feedData.feeds.forEach(newFeed => {
+            // Check for ID collision
+            if (allFeeds.some(existingFeed => existingFeed.id === newFeed.id)) {
+                console.warn(`Skipping feed with duplicate ID '${newFeed.id}' from URL ${url}`);
+                // Optionally show a notification about the duplicate ID
+                // showFeedNotification(`Feed with ID '${newFeed.id}' already exists.`, 'error');
+            } else {
+                // 1. Add to internal array
+                newFeed.sourceUrl = url; // Store source URL
+                allFeeds.push(newFeed);
+                
+                // 2. Add to dropdown
+                const option = document.createElement('option');
+                option.value = newFeed.id;
+                option.textContent = newFeed.title;
+                feedSelect.appendChild(option);
+                
+                addedFeedId = newFeed.id; // Store the ID of the last successfully added feed
+                feedAddedCount++;
+                console.log(`Added new feed: ${newFeed.title} (ID: ${newFeed.id})`);
+            }
+        });
+
+        if (feedAddedCount > 0) {
+             // 3. Save original URL to storage
+             const newUrls = [...currentUrls, url];
+             saveCustomFeedUrls(newUrls);
+             feedUrlInput.value = ''; // Clear input
+             showFeedNotification(`${feedAddedCount} feed(s) added successfully!`, 'success');
+
+             // 4. Optionally select the last added feed
+             if (addedFeedId) {
+                 feedSelect.value = addedFeedId;
+                 handleFeedChange(); // Trigger loading the new feed's tracks
+             }
+        } else {
+             // This happens if all feeds in the URL had duplicate IDs
+             showFeedNotification("No new feeds added (all IDs already exist).", 'error');
+        }
     }
 
 }); 
