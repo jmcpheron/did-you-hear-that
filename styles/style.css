@@ -327,4 +327,30 @@ h1 {
     border-color: var(--accent-color);
 }
 
-/* --- End Playback Speed Controls --- */ 
+/* --- End Playback Speed Controls --- */
+
+
+/* --- Footer --- */
+footer {
+    margin-top: 30px; /* Space above footer */
+    padding-top: 20px; /* Space within footer */
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--text-light-muted);
+}
+
+footer p {
+    margin: 0;
+}
+
+footer a {
+    color: var(--accent-darker);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* --- End Footer --- */ 
