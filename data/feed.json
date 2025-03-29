@@ -6,9 +6,10 @@
       "tracks": [
         {
           "id": "episode1",
-          "title": "Episode 1: Introduction",
+          "title": "Episode 1: Wizard math story",
           "description": "Welcome to our first episode where we introduce the topic.",
-          "audioUrl": "sample_audio/openai-fm-coral-sports-coach.mp3"
+          "albumArt":"sample_audio/wizard.png",
+          "audioUrl": "sample_audio/Claude-math-process_alloy_wizard.mp3"
         },
         {
           "id": "episode2",
