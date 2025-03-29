@@ -34,8 +34,19 @@ This section outlines how to set up the project structure and run the player loc
 
 ### Local Development (After Setup)
 
-1.  **Serve locally:** Use a simple HTTP server (like Python's `http.server` or Node's `live-server`) or a tool like VSCode's Live Server to serve the project directory.
-2.  **Access:** Open `index.html` via the local server address (e.g., `http://localhost:8000` or `http://localhost:5500`) in your browser.
+1.  **Activate Environment:** Open your terminal in the project directory and activate the Python virtual environment:
+    *   On macOS/Linux: `source .venv/bin/activate`
+    *   On Windows (Command Prompt): `.venv\Scripts\activate.bat`
+    *   On Windows (PowerShell): `.venv\Scripts\Activate.ps1`
+    *(Note: If using VS Code with the Python extension, opening the integrated terminal might automatically activate the environment configured in `.vscode/settings.json`.)*
+
+2.  **Run the Server:** With the environment active, run the provided Python server script:
+    ```bash
+    python run_server.py
+    ```
+
+3.  **Access:** The script will output the address. Open `http://localhost:8000/` in your browser.
+4.  **Stop Server:** Press `Ctrl+C` in the terminal where the server is running.
 
 ### Deployment (Once Developed)
 
