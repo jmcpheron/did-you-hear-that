@@ -56,8 +56,10 @@
 
         <!-- Player UI elements moved up -->
         <div id="album-art">
-            <!-- Placeholder - Can be filled with JS later -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#cccccc"><path d="M6 18h12v-2H6v2zm6-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM21 4H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 12H4V6h16v10z"/></svg>
+            <!-- Placeholder SVG (shown when no album art available) -->
+            <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#cccccc"><path d="M6 18h12v-2H6v2zm6-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM21 4H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 12H4V6h16v10z"/></svg>
+            <!-- Custom album art image (hidden by default) -->
+            <img id="custom-album-art" src="" alt="Album artwork" style="display: none;">
         </div>
 
         <div id="player-controls">

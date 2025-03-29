@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const customFeedsContainer = document.getElementById('custom-feeds-container');
     const customFeedsList = document.getElementById('custom-feeds-list');
     const toggleCustomFeedsBtn = document.getElementById('toggle-custom-feeds-btn');
+    const defaultAlbumArt = document.getElementById('default-album-art');
+    const customAlbumArt = document.getElementById('custom-album-art');
 
     // --- State Variables ---
     let allFeeds = []; // Holds the combined default and custom feeds
@@ -222,6 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
              trackTitleElement.textContent = track.title;
              trackDescriptionElement.textContent = track.description || '';
              updatePlayingClass(trackId);
+             
+             // Update album art if available
+             updateAlbumArt(track.albumArt || null);
 
              // Apply saved playback speed
              const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
@@ -304,7 +309,24 @@ document.addEventListener('DOMContentLoaded', () => {
          seekBar.max = 0;
          seekBar.style.setProperty('--seek-before-percent', '0%');
          updatePlayingClass(null);
+         // Reset album art to default
+         updateAlbumArt(null);
      }
+
+    // --- Album Art Handling ---
+    function updateAlbumArt(imageUrl) {
+        if (imageUrl) {
+            // If there's a URL, show the custom image and hide the default SVG
+            customAlbumArt.src = imageUrl;
+            customAlbumArt.style.display = 'block';
+            defaultAlbumArt.style.display = 'none';
+        } else {
+            // Otherwise show the default SVG
+            customAlbumArt.style.display = 'none';
+            defaultAlbumArt.style.display = 'block';
+            customAlbumArt.src = ''; // Clear the src to prevent unnecessary network requests
+        }
+    }
 
     // --- Progress & State Update ---
     function getProgressSpan(trackId) {

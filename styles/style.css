@@ -66,12 +66,23 @@ h1 {
     display: flex; /* Center icon inside */
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* To clip image to rounded corners */
+    position: relative; /* For positioning children */
 }
 
 #album-art svg {
      width: 48px; /* Larger icon */
      height: 48px;
      fill: var(--border-color);
+}
+
+#custom-album-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image covers the area without distorting */
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 /* --- Custom Player Controls --- */
@@ -333,8 +344,13 @@ h1 {
     }
 
     #album-art {
-        width: 100px; /* Even larger */
-        height: 100px;
+        width: 120px; /* Even larger on desktop */
+        height: 120px;
+    }
+    
+    #album-art svg {
+        width: 60px;
+        height: 60px;
     }
 
     #player-controls {

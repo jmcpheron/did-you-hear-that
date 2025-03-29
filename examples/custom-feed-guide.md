@@ -17,7 +17,8 @@ A custom feed must be a JSON file with the following structure:
           "id": "track-1",        // Required: A unique ID within this feed
           "title": "Track Title", // Required: Display title of the track
           "audioUrl": "https://example.com/audio.mp3", // Required: URL to the audio file
-          "description": "About this track" // Optional: Track description
+          "description": "About this track", // Optional: Track description
+          "albumArt": "https://example.com/cover.jpg" // Optional: URL to album artwork
         },
         // Add more tracks as needed...
       ]
@@ -32,8 +33,9 @@ A custom feed must be a JSON file with the following structure:
 1. **File Format**: Must be valid JSON and accessible via a URL
 2. **Required Fields**: Each feed needs an `id`, `title`, and `tracks` array
 3. **Track Fields**: Each track needs an `id`, `title`, and `audioUrl`
-4. **Audio URLs**: Can be relative (for local files) or absolute (remote files)
-5. **CORS**: For remote files, the server must allow cross-origin requests
+4. **Optional Fields**: Tracks can include `description` and `albumArt` (URL to an image)
+5. **Audio URLs**: Can be relative (for local files) or absolute (remote files)
+6. **CORS**: For remote files, the server must allow cross-origin requests
 
 ## Example Feed
 
