@@ -1,22 +1,46 @@
 {
-  "tracks": [
+  "feeds": [
     {
-      "id": "episode1",
-      "title": "Episode 1: Introduction",
-      "description": "Welcome to our first episode where we introduce the topic.",
-      "audioUrl": "audio/openai-fm-coral-sports-coach.mp3"
+      "id": "default",
+      "title": "Default Fun Stuff",
+      "tracks": [
+        {
+          "id": "episode1",
+          "title": "Episode 1: Introduction",
+          "description": "Welcome to our first episode where we introduce the topic.",
+          "audioUrl": "audio/openai-fm-coral-sports-coach.mp3"
+        },
+        {
+          "id": "episode2",
+          "title": "Episode 2: Deep Dive",
+          "description": "In this episode, we take a deeper look into the subject matter.",
+          "audioUrl": "audio/openai-fm-coral-dramatic.mp3"
+        },
+        {
+          "id": "episode3",
+          "title": "Episode 3: Guest Interview",
+          "description": "Featuring a special guest discussing their experiences.",
+          "audioUrl": "audio/openai-fm-sage-connoisseur.mp3"
+        }
+      ]
     },
     {
-      "id": "episode2",
-      "title": "Episode 2: Deep Dive",
-      "description": "In this episode, we take a deeper look into the subject matter.",
-      "audioUrl": "audio/openai-fm-coral-dramatic.mp3"
-    },
-    {
-      "id": "episode3",
-      "title": "Episode 3: Guest Interview",
-      "description": "Featuring a special guest discussing their experiences.",
-      "audioUrl": "audio/openai-fm-sage-connoisseur.mp3"
+      "id": "work",
+      "title": "Work Projects Audio",
+      "tracks": [
+        {
+          "id": "work_proj1",
+          "title": "Project Alpha Kickoff",
+          "description": "Initial meeting recording for Project Alpha.",
+          "audioUrl": "audio/placeholder_work1.mp3" 
+        },
+        {
+          "id": "work_proj2",
+          "title": "Beta Feedback Session",
+          "description": "Discussion on the beta feedback received.",
+          "audioUrl": "audio/placeholder_work2.mp3"
+        }
+      ]
     }
   ]
 } 
