@@ -10,40 +10,57 @@
     <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
-
     <div id="audio-player-container">
-        <h1>Did you hear that?</h1>
 
-        <div id="player-controls">
-            <!-- <audio id="audio-element" controls></audio> -->
-            <audio id="audio-element" preload="metadata"></audio>
+        <!-- Top Section: Content -->
+        <div class="content-area">
+            <h1>Did you hear that?</h1>
 
-            <div class="custom-controls">
-                <button id="play-pause-button" aria-label="Play">▶️</button>
-                <span id="current-time" class="time-display">0:00</span>
-                <input type="range" id="seek-bar" value="0" step="0.1" aria-label="Seek progress">
-                <span id="total-duration" class="time-display">--:--</span>
+            <div id="feed-selector-container">
+                 <label for="feed-select">Select Feed:</label>
+                 <select id="feed-select">
+                     <option value="">Loading feeds...</option>
+                 </select>
+            </div>
+    
+            <div id="current-track-info">
+                <h2 id="track-title">No track selected</h2>
+                <p id="track-description"></p> 
+            </div>
+    
+            <div id="track-list-container">
+                <h2>Tracks / Episodes</h2>
+                <ul id="track-list">
+                    <!-- Track list will be populated by JavaScript -->
+                    <li>Loading tracks...</li>
+                </ul>
             </div>
         </div>
 
-        <div id="feed-selector-container" style="margin-bottom: 20px; text-align: center;">
-             <label for="feed-select">Select Feed:</label>
-             <select id="feed-select">
-                 <option value="">Loading feeds...</option>
-             </select>
-        </div>
-
-        <div id="current-track-info">
-            <h2 id="track-title">No track selected</h2>
-            <p id="track-description"></p> 
-        </div>
-
-        <div id="track-list-container">
-            <h2>Tracks / Episodes</h2>
-            <ul id="track-list">
-                <!-- Track list will be populated by JavaScript -->
-                <li>Loading tracks...</li>
-            </ul>
+        <!-- Bottom Section: Player UI -->
+        <div class="player-ui-area">
+            <div id="album-art">
+                <!-- Placeholder - Can be filled with JS later -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#cccccc"><path d="M6 18h12v-2H6v2zm6-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM21 4H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 12H4V6h16v10z"/></svg>
+            </div>
+            
+            <div id="player-controls">
+                 <audio id="audio-element" preload="metadata"></audio>
+                 
+                 <div class="custom-controls">
+                    <!-- Time displays and seek bar -->
+                    <div class="time-and-seek">
+                        <span id="current-time" class="time-display">0:00</span>
+                        <input type="range" id="seek-bar" value="0" step="0.1" aria-label="Seek progress">
+                        <span id="total-duration" class="time-display">--:--</span>
+                    </div>
+                    <!-- Centered Play/Pause -->
+                    <div class="main-control">
+                         <button id="play-pause-button" aria-label="Play">▶️</button>
+                         <!-- Add skip buttons here later if desired -->
+                    </div>
+                 </div>
+            </div>
         </div>
 
     </div>
