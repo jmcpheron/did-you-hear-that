@@ -2,7 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <!-- Mobile & Tablet Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Did You Hear That?">
+    <meta name="theme-color" content="#121212">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="sample_audio/clwb.png">
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
     <!-- Cache Control Meta Tags -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -59,60 +68,69 @@
                  </div>
             </div>
 
-            <!-- Album Art -->
-            <div id="album-art">
-                <img id="custom-album-art" src="" alt="Album artwork">
-                <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                </svg>
-            </div>
-
-            <!-- Player Controls -->
-            <div id="player-controls">
-                <div class="time-control">
-                    <span id="current-time">0:00</span>
-                    <input type="range" id="seek-bar" value="0" max="0">
-                    <span id="duration">--:--</span>
-                </div>
-                <div class="main-control">
-                    <button id="prev-button" class="skip-button" aria-label="Previous track">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                            <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+            <!-- Main content area for two-column layout -->
+            <div class="main-layout-container">
+                <!-- Left Column: Player -->
+                <div class="player-column">
+                    <!-- Album Art -->
+                    <div id="album-art">
+                        <img id="custom-album-art" src="" alt="Album artwork">
+                        <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                         </svg>
-                    </button>
-                    <button id="play-pause-button">▶</button>
-                    <button id="next-button" class="skip-button" aria-label="Next track">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="speed-controls">
-                    <button class="speed-button" data-speed="0.5">0.5x</button>
-                    <button class="speed-button active" data-speed="1.0">1x</button>
-                    <button class="speed-button" data-speed="1.5">1.5x</button>
-                    <button class="speed-button" data-speed="2.0">2x</button>
-                </div>
-            </div>
+                    </div>
 
-            <!-- Current Track Info -->
-            <div id="current-track-info">
-                <div id="track-info-art">
-                    <img id="track-info-custom-art" src="" alt="Current track artwork">
-                    <svg id="track-info-default-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                    </svg>
-                </div>
-                <div id="track-info-text">
-                    <h2>No Track Selected</h2>
-                    <p>Select a track from the list below to start playing.</p>
-                </div>
-            </div>
+                    <!-- Player Controls -->
+                    <div id="player-controls">
+                        <div class="time-control">
+                            <span id="current-time">0:00</span>
+                            <input type="range" id="seek-bar" value="0" max="0">
+                            <span id="duration">--:--</span>
+                        </div>
+                        <div class="main-control">
+                            <button id="prev-button" class="skip-button" aria-label="Previous track">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+                                </svg>
+                            </button>
+                            <button id="play-pause-button">▶</button>
+                            <button id="next-button" class="skip-button" aria-label="Next track">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="speed-controls">
+                            <button class="speed-button" data-speed="0.5">0.5x</button>
+                            <button class="speed-button active" data-speed="1.0">1x</button>
+                            <button class="speed-button" data-speed="1.5">1.5x</button>
+                            <button class="speed-button" data-speed="2.0">2x</button>
+                        </div>
+                    </div>
 
-            <!-- Track List -->
-            <div id="track-list-container">
-                <h2>Playlist <span id="track-count" class="track-count"></span></h2>
-                <ul id="track-list"></ul>
+                    <!-- Current Track Info -->
+                    <div id="current-track-info">
+                        <div id="track-info-art">
+                            <img id="track-info-custom-art" src="" alt="Current track artwork">
+                            <svg id="track-info-default-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <div id="track-info-text">
+                            <h2>No Track Selected</h2>
+                            <p>Select a track from the list below to start playing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Playlist -->
+                <div class="playlist-column">
+                    <!-- Track List -->
+                    <div id="track-list-container">
+                        <h2>Playlist <span id="track-count" class="track-count"></span></h2>
+                        <ul id="track-list"></ul>
+                    </div>
+                </div>
             </div>
 
             <!-- Help Dialog (remains as modal) -->

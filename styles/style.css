@@ -728,8 +728,8 @@ footer a:hover {
     opacity: 0.9;
 }
 
-/* Desktop Adjustments */
-@media (min-width: 768px) {
+/* Desktop Adjustments - Modify to use two columns */
+@media (min-width: 900px) { /* Breakpoint for two-column layout */
     body {
         height: 100vh;
         display: flex;
@@ -740,62 +740,114 @@ footer a:hover {
     }
 
     #audio-player-container {
-        max-width: 450px;
+        max-width: 1000px; /* Wider container for two columns */
+        width: 90%;
         min-height: auto;
         height: auto;
-        max-height: 90vh;
+        max-height: 90vh; /* Allow scrolling if content is tall */
         border-radius: var(--border-radius-lg);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        padding: 25px;
+        padding: 30px;
         overflow-y: auto;
         margin: 25px auto;
     }
-
+    
+    .main-layout-container {
+        display: flex;
+        gap: 30px; /* Space between columns */
+        align-items: flex-start; /* Align columns to the top */
+        margin-top: 20px; /* Space below header/settings */
+    }
+    
+    .player-column {
+        flex: 1 1 400px; /* Player column takes up available space, min 400px */
+        min-width: 350px;
+    }
+    
+    .playlist-column {
+        flex: 1 1 40%; /* Playlist column takes roughly 40% */
+        min-width: 300px;
+        /* Make playlist scrollable independently */
+        max-height: calc(90vh - 100px); /* Adjust based on padding/header height */
+        overflow-y: auto;
+        position: sticky; /* Stick playlist when scrolling */
+        top: 20px; /* Stick below the main padding */
+    }
+    
+    /* Adjustments within columns */
     #album-art {
-        width: 180px;
-        height: 180px;
-        position: relative;
-        z-index: 1;
-        /* Clear positioning that might make it overlap */
-        margin: 0 auto 30px; /* Increased bottom margin to prevent overlap */
+        width: 220px; /* Larger album art */
+        height: 220px;
+        margin: 0 auto 30px;
     }
     
     #default-album-art {
-        width: 90px;
-        height: 90px;
+        width: 100px;
+        height: 100px;
     }
 
     #player-controls {
-        margin-bottom: 35px;
-        padding-bottom: 25px;
-    }
-    
-    /* Optional - animated focus effect for seek bar on desktop */
-    #seek-bar:focus {
-        height: 8px;
-    }
-
-    /* Optional: Add subtle hover animations to track list items */
-    #track-list li:hover {
-        transform: translateX(3px);
-    }
-
-    #track-list-container {
-        padding: 20px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: none; /* Remove border as separation is clear */
     }
     
     #current-track-info {
-        margin-bottom: 10px;
-        margin-top: -20px;
+        margin-top: 0; /* Reset margin */
+        margin-bottom: 0;
     }
 
-    #track-info-art {
-        width: 50px;
-        height: 50px;
+    #track-list-container {
+        margin-top: 0; /* Reset margin */
+        padding: 20px;
+        background-color: transparent; /* Blend with background */
+        box-shadow: none; /* Remove redundant shadow */
+        border: 1px solid var(--border-color); /* Add a border instead */
     }
-    #track-info-default-art {
-        width: 30px;
-        height: 30px;
+    
+    #track-list {
+        background-color: var(--bg-card); /* List items have background */
+    }
+}
+
+/* Tablet Specific Media Queries - Adjust breakpoint and styles if needed */
+@media screen and (min-width: 768px) and (max-width: 899px) { /* Adjusted max-width */
+    /* Keep tablet styles mostly as they were, single column */
+    #audio-player-container {
+        padding: var(--container-padding) 10%;
+        max-width: 600px; /* Slightly wider max-width for portrait tablets */
+        margin: 20px auto;
+    }
+    
+    #album-art {
+        width: 180px;
+        height: 180px;
+    }
+    
+    #play-pause-button {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .main-control {
+        gap: 30px;
+    }
+    
+    .speed-controls {
+        margin-top: 20px;
+    }
+    
+    .speed-button {
+        padding: 8px 16px;
+        font-size: 1em;
+    }
+    
+    #track-list-container {
+        margin-top: 30px;
+    }
+    
+    #track-list li {
+        padding: 15px;
     }
 }
 
@@ -1194,4 +1246,41 @@ footer a:hover {
 .close-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
+}
+
+/* Touch-specific improvements */
+@media (hover: none) {
+    /* Larger touch targets for touch devices */
+    .speed-button, 
+    #prev-button, 
+    #next-button,
+    #play-pause-button,
+    #toggle-settings-button,
+    #track-list li {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(var(--accent-rgb), 0.2);
+    }
+    
+    /* Increase padding for better touch targets */
+    #track-list li {
+        padding: 14px 16px;
+    }
+    
+    /* Make the seek bar easier to grab on touch devices */
+    #seek-bar::-webkit-slider-thumb {
+        width: 18px;
+        height: 18px;
+    }
+    
+    #seek-bar::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+    #audio-player-container {
+        min-height: -webkit-fill-available;
+    }
 } 
