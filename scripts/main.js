@@ -77,6 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const manageFeedsButton = document.getElementById('manage-feeds-button');
     const feedModalOverlay = document.getElementById('feed-modal-overlay');
     const closeFeedModalButton = document.getElementById('close-feed-modal');
+    const trackInfoDefaultArt = document.getElementById('track-info-default-art');
+    const trackInfoCustomArt = document.getElementById('track-info-custom-art');
+    const trackInfoText = document.querySelector('.track-info-text');
 
     // --- State Variables ---
     let allFeeds = [];
@@ -264,10 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
              resetPreviousTrackProgress();
              currentTrackId = track.id;
              audioPlayer.src = track.audioUrl;
-             currentTrackInfo.innerHTML = `
-                <h2>${track.title || 'Unknown Track'}</h2>
-                <p>${track.description || 'No description available'}</p>
-            `;
+             updateTrackInfo(track);
              updatePlayingClass(trackId);
              
              updateAlbumArt(track.albumArt || null);
@@ -339,10 +339,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
      function resetPlayerUI() {
          updatePlayPauseButton(false);
-         currentTrackInfo.innerHTML = `
-            <h2>No Track Selected</h2>
-            <p>Select a track from the list below to start playing.</p>
-        `;
+         if (trackInfoText) {
+             trackInfoText.innerHTML = `
+                 <h2>No Track Selected</h2>
+                 <p>Select a track from the list below to start playing.</p>
+             `;
+         }
+         if (trackInfoCustomArt && trackInfoDefaultArt) {
+             trackInfoCustomArt.src = '';
+             trackInfoCustomArt.style.display = 'none';
+             trackInfoDefaultArt.style.display = 'block';
+         }
          currentTimeDisplay.textContent = '0:00';
          durationDisplay.textContent = '--:--';
          seekBar.value = 0;
@@ -852,4 +859,29 @@ document.addEventListener('DOMContentLoaded', () => {
             helpDialog.classList.add('hidden');
         }
     });
+
+    // --- Update Track Info (modified to include small art) ---
+    function updateTrackInfo(track) {
+        // Update text content
+        if (trackInfoText) {
+            trackInfoText.innerHTML = `
+                <h2>${track.title || 'Unknown Track'}</h2>
+                <p>${track.description || 'No description available'}</p>
+            `;
+        }
+        
+        // Update small album art in track info
+        const imageUrl = track.albumArt || null;
+        if (trackInfoCustomArt && trackInfoDefaultArt) {
+            if (imageUrl) {
+                trackInfoCustomArt.src = imageUrl;
+                trackInfoCustomArt.style.display = 'block';
+                trackInfoDefaultArt.style.display = 'none';
+            } else {
+                trackInfoCustomArt.src = '';
+                trackInfoCustomArt.style.display = 'none';
+                trackInfoDefaultArt.style.display = 'block';
+            }
+        }
+    }
 }); 

@@ -248,28 +248,74 @@ h1 {
 /* Current Track Info */
 #current-track-info {
     margin-bottom: 25px;
-    padding: 16px;
+    padding: 12px; /* Reduced padding slightly */
     background-color: var(--bg-card);
     border-radius: var(--border-radius-md);
     transition: transform 0.2s ease;
+    display: flex; /* Use flexbox to align art and text */
+    align-items: center; /* Vertically center items */
+    gap: 12px; /* Space between art and text */
 }
 
 #current-track-info:hover {
     transform: translateY(-2px);
 }
 
+/* Container for the small album art */
+.track-info-art-container {
+    width: 50px; /* Size of the small art */
+    height: 50px;
+    flex-shrink: 0; /* Prevent shrinking */
+    background-color: var(--bg-controls); /* Background for default state */
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#track-info-default-art {
+    width: 24px; /* Size of the default icon */
+    height: 24px;
+    fill: var(--text-tertiary);
+}
+
+#track-info-custom-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Container for the text */
+.track-info-text {
+    flex-grow: 1; /* Allow text to take remaining space */
+    min-width: 0; /* Prevent text overflow issues in flexbox */
+}
+
 #current-track-info h2 {
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0; /* Reduced bottom margin */
     color: var(--text-primary);
-    font-size: 1.2em;
+    font-size: 1.1em; /* Slightly smaller */
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis if title is too long */
 }
 
 #current-track-info p {
     margin-bottom: 0;
-    font-size: 0.95em;
+    font-size: 0.9em; /* Slightly smaller */
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: 1.4; /* Adjusted line height */
+    /* Optional: Limit description lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
 }
 
 /* Track List */
