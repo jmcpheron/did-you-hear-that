@@ -51,28 +51,29 @@ h1 {
 
 /* Add some spacing after player controls */
 #player-controls {
-    margin-bottom: 25px; /* Space before track info */
+    margin-bottom: 30px; /* Increased from 25px - Space before track info */
     text-align: center;
     border-bottom: 1px solid var(--border-light); /* Separate controls visually */
     padding-bottom: 15px; /* Padding above border */
 }
 
 #album-art {
-    width: 80px; /* Make art slightly larger */
-    height: 80px;
+    width: 140px; /* Increased from 80px */
+    height: 140px; /* Increased from 80px */
     background-color: var(--controls-bg);
-    border-radius: 6px;
-    margin: 0 auto 15px auto; /* Centered, space below */
-    display: flex; /* Center icon inside */
+    border-radius: 8px; /* Slightly increased radius */
+    margin: 0 auto 20px auto; /* More space below */
+    display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden; /* To clip image to rounded corners */
-    position: relative; /* For positioning children */
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 }
 
 #album-art svg {
-     width: 48px; /* Larger icon */
-     height: 48px;
+     width: 70px; /* Increased from 48px */
+     height: 70px; /* Increased from 48px */
      fill: var(--border-color);
 }
 
@@ -344,13 +345,14 @@ h1 {
     }
 
     #album-art {
-        width: 120px; /* Even larger on desktop */
-        height: 120px;
+        width: 200px; /* Increased from 120px */
+        height: 200px; /* Increased from 120px */
+        border-radius: 10px; /* Larger radius for desktop */
     }
     
     #album-art svg {
-        width: 60px;
-        height: 60px;
+        width: 90px; /* Increased from 60px */
+        height: 90px;
     }
 
     #player-controls {
