@@ -60,29 +60,22 @@ h1 {
 
 /* Album Art Section */
 #album-art {
-    width: 220px;
-    height: 220px;
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    margin: 0 auto 30px auto;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 8px;
     overflow: hidden;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: var(--bg-controls);
 }
 
-#album-art:hover {
-    transform: scale(1.02);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-}
-
-#album-art svg {
-    width: 80px;
-    height: 80px;
-    fill: var(--text-tertiary);
+#default-album-art {
+    width: 60px;
+    height: 60px;
+    color: var(--text-secondary);
 }
 
 #custom-album-art {
@@ -728,13 +721,13 @@ footer a:hover {
     }
 
     #album-art {
-        width: 250px;
-        height: 250px;
+        width: 160px;
+        height: 160px;
     }
     
-    #album-art svg {
-        width: 100px;
-        height: 100px;
+    #default-album-art {
+        width: 80px;
+        height: 80px;
     }
 
     #player-controls {
