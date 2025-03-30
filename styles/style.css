@@ -75,13 +75,20 @@ h1 {
 }
 
 #album-art img,
-#album-art svg {
+#album-art svg,
+#album-art video {
     width: 100%;
     height: 100%;
     display: block; /* Ensure block display */
     position: absolute; /* Keep within container bounds */
     top: 0;
     left: 0;
+    object-fit: contain; /* Change to contain to prevent cropping */
+}
+
+#album-art video {
+    display: none; /* Hide video by default */
+    background-color: #000; /* Black background while loading */
 }
 
 #album-art img {

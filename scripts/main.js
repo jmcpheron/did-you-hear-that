@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM Elements ---
     const audioPlayer = document.getElementById('audio-player');
+    const videoArtDisplay = document.getElementById('video-art-display');
     const trackList = document.getElementById('track-list');
     const currentTrackInfo = document.getElementById('current-track-info');
     const playPauseButton = document.getElementById('play-pause-button');
@@ -139,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFeedId = null;
     let currentTracks = [];
     let currentTrackId = null;
+    let isCurrentTrackVideo = false;
     let currentTrackDuration = 0;
     let isSeeking = false;
     let isPlaying = false;
@@ -387,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (successfullyLoadedFeed) {
             const lastSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
             audioPlayer.playbackRate = lastSpeed;
+            videoArtDisplay.playbackRate = lastSpeed;
             updateSpeedButtonActiveState(lastSpeed);
     
             const lastTrackId = localStorage.getItem(getLocalStorageKey('track_id')); 
@@ -397,6 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 playTrack(lastTrackId, false);
             } else {
                 console.log(`No specific last track saved or found for feed ${currentFeedId}.`);
+                resetPlayerUI();
             }
         }
         updatePrevNextButtonStates();
@@ -726,10 +730,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Consolidated Album Art Update Function ---
+    // --- Consolidated Album Art Update Function (for static images only) ---
     function updateAlbumArtDisplay(imageUrl) {
-        console.log('Updating album art with URL:', imageUrl);
+        console.log('Updating STATIC album art with URL:', imageUrl);
         
+        // This function should NOT run if a video is supposed to be active
+        if (isCurrentTrackVideo) {
+             console.log("Skipping static art update because video is active.");
+             return; 
+        }
+            
         const hasValidImageUrl = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '';
 
         // Main Album Art
@@ -795,25 +805,59 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isNewTrack = currentTrackId !== trackId;
+        isCurrentTrackVideo = track.audioUrl.toLowerCase().endsWith('.mp4');
+        
         if (isNewTrack) {
             resetPreviousTrackProgress();
             currentTrackId = track.id;
-            audioPlayer.src = track.audioUrl;
+            
+            // Set source for audio player regardless of type
+            audioPlayer.src = track.audioUrl; 
+            
             updateTrackInfo(track);
             updatePlayingClass(trackId);
-            
-            // Use consolidated function
-            updateAlbumArtDisplay(track.albumArt || null);
+                       
+            // Handle visual display (Video or Static Art)
+            if (isCurrentTrackVideo) {
+                console.log("Loading MP4 track:", track.title);
+                videoArtDisplay.src = track.audioUrl;
+                videoArtDisplay.style.display = 'block';
+                customAlbumArt.style.display = 'none';
+                defaultAlbumArt.style.display = 'none';
+                trackInfoCustomArt.style.display = 'none';
+                trackInfoDefaultArt.style.display = 'none';
+                trackInfoCustomArt.src = '';
+            } else {
+                console.log("Loading MP3/Audio track:", track.title);
+                videoArtDisplay.style.display = 'none';
+                videoArtDisplay.src = '';
+                updateAlbumArtDisplay(track.albumArt || null);
+                if (track.albumArt) {
+                    trackInfoCustomArt.src = track.albumArt;
+                    trackInfoCustomArt.style.display = 'block';
+                    trackInfoDefaultArt.style.display = 'none';
+                } else {
+                    trackInfoCustomArt.src = '';
+                    trackInfoCustomArt.style.display = 'none';
+                    trackInfoDefaultArt.style.display = 'block';
+                }
+            }
 
             const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
             audioPlayer.playbackRate = savedSpeed;
+            videoArtDisplay.playbackRate = savedSpeed;
             updateSpeedButtonActiveState(savedSpeed);
 
             const savedTime = localStorage.getItem(getLocalStorageKey('pos', track.id));
-            audioPlayer.currentTime = savedTime ? parseFloat(savedTime) : 0;
-
-            seekBar.value = audioPlayer.currentTime;
-            currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+            const targetTime = savedTime ? parseFloat(savedTime) : 0;
+            audioPlayer.currentTime = targetTime;
+            if (isCurrentTrackVideo) {
+                 videoArtDisplay.currentTime = targetTime;
+                 console.log(`Attempting to set initial video time to: ${targetTime}`);
+            }
+            
+            seekBar.value = targetTime;
+            currentTimeDisplay.textContent = formatTime(targetTime);
             durationDisplay.textContent = '--:--';
 
             localStorage.setItem(getLocalStorageKey('track_id'), track.id);
@@ -822,15 +866,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (shouldPlay && (audioPlayer.paused || isNewTrack)) {
             const playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.then(_ => updatePlayPauseButton(true))
-                         .catch(error => {
-                             console.error("Playback error:", error);
-                             updatePlayPauseButton(false);
-                         });
+                playPromise.then(_ => {
+                    updatePlayPauseButton(true);
+                    if (isCurrentTrackVideo) {
+                         videoArtDisplay.play().catch(e => console.error("Video play error:", e)); 
+                    }
+                })
+                             .catch(error => {
+                                 console.error("Audio playback error:", error);
+                                 updatePlayPauseButton(false);
+                                 if (isCurrentTrackVideo) {
+                                     videoArtDisplay.pause();
+                                 }
+                             });
             }
-        } else if (!shouldPlay) {
-            updatePlayPauseButton(false);
+        } else if (!shouldPlay && !audioPlayer.paused) {
+             audioPlayer.pause(); 
+             if (isCurrentTrackVideo) {
+                videoArtDisplay.pause();
+             }
+             updatePlayPauseButton(false);
+        } else if (!shouldPlay && audioPlayer.paused) {
+             updatePlayPauseButton(false);
         }
+               
         updatePrevNextButtonStates();
     }
 
@@ -843,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (audioPlayer.paused || audioPlayer.ended) {
-            audioPlayer.play().then(() => updatePlayPauseButton(true)).catch(e => console.error("Error playing:", e));
+            audioPlayer.play().catch(e => console.error("Error playing:", e));
         } else {
             audioPlayer.pause();
         }
@@ -880,9 +939,12 @@ document.addEventListener('DOMContentLoaded', () => {
              `;
          }
          
-         // Use consolidated function to reset art
+         // Use consolidated function to reset static art
          updateAlbumArtDisplay(null);
-         
+         videoArtDisplay.style.display = 'none';
+         videoArtDisplay.src = '';
+         isCurrentTrackVideo = false;
+
          currentTimeDisplay.textContent = '0:00';
          durationDisplay.textContent = '--:--';
          seekBar.value = 0;
@@ -941,6 +1003,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target.classList.contains('speed-button')) {
             const newSpeed = parseFloat(event.target.dataset.speed);
             audioPlayer.playbackRate = newSpeed;
+            if (isCurrentTrackVideo) {
+                 videoArtDisplay.playbackRate = newSpeed;
+            }
             localStorage.setItem('last_playback_speed', newSpeed);
             updateSpeedButtonActiveState(newSpeed);
         }
@@ -970,27 +1035,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
             seekBar.style.setProperty('--seek-before-percent', `${percentage}%`);
+            
+            if (isCurrentTrackVideo && Math.abs(videoArtDisplay.currentTime - currentTime) > 0.2) {
+                 videoArtDisplay.currentTime = currentTime;
+            }
         }
     });
 
-    audioPlayer.addEventListener('play', () => updatePlayPauseButton(true));
-    audioPlayer.addEventListener('pause', () => updatePlayPauseButton(false));
+    audioPlayer.addEventListener('play', () => {
+        updatePlayPauseButton(true);
+        if (isCurrentTrackVideo) {
+            videoArtDisplay.play().catch(e => console.error("Video play sync error:", e));
+        }
+    });
+    audioPlayer.addEventListener('pause', () => {
+        updatePlayPauseButton(false);
+        if (isCurrentTrackVideo) {
+            videoArtDisplay.pause();
+        }
+    });
     audioPlayer.addEventListener('ended', () => {
-        // Reset UI elements for the current track
         updatePlayPauseButton(false);
         seekBar.value = 0;
         currentTimeDisplay.textContent = formatTime(0);
         seekBar.style.setProperty('--seek-before-percent', '0%');
         
+        if (isCurrentTrackVideo) {
+            videoArtDisplay.pause();
+            videoArtDisplay.currentTime = 0; 
+        }
+            
         if (currentTrackId) {
             updateProgressDisplay(currentTrackId, 0, currentTrackDuration);
             localStorage.setItem(getLocalStorageKey('pos', currentTrackId), '0');
             
-            // Automatically play the next track if available
-            if (currentTracks && currentTracks.length > 1) {
-                // Small delay before playing next track to ensure UI updates properly
-                setTimeout(() => playNextTrack(), 300);
-            }
+            setTimeout(() => playNextTrack(), 300);
         }
     });
 
@@ -1005,13 +1084,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     seekBar.addEventListener('change', () => {
         if (!currentTrackId) return;
-        audioPlayer.currentTime = parseFloat(seekBar.value);
+        const seekTime = parseFloat(seekBar.value);
+        audioPlayer.currentTime = seekTime;
+        if (isCurrentTrackVideo) {
+             videoArtDisplay.currentTime = seekTime;
+        }
+           
         isSeeking = false;
         if (audioPlayer.paused) {
              if (audioPlayer.currentTime < audioPlayer.duration) {
                  audioPlayer.play().then(() => updatePlayPauseButton(true)).catch(e => console.error("Error playing after seek:", e));
              }
         }
+    });
+    
+    videoArtDisplay.addEventListener('timeupdate', () => {
+        // console.log(`Video time: ${videoArtDisplay.currentTime}`); 
+    });
+    
+    videoArtDisplay.addEventListener('loadedmetadata', () => {
+         console.log(`Video metadata loaded. Duration: ${videoArtDisplay.duration}`);
+    });
+    
+    videoArtDisplay.addEventListener('error', (e) => {
+        console.error("Video element error:", e);
     });
 
     // State Saving/Loading
@@ -1044,7 +1140,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleSettingsButton.setAttribute('aria-expanded', !isExpanded);
         settingsSection.classList.toggle('hidden');
         
-        // Optional: Close the feed options list when collapsing the main section
         if (isExpanded) {
             toggleFeedOptionsList(false);
         }
@@ -1052,43 +1147,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle keyboard navigation and shortcuts
     document.addEventListener('keydown', (event) => {
-        // Close dialogs with ESC key
         if (event.key === 'Escape') {
             if (!helpDialog.classList.contains('hidden')) {
                 helpDialog.classList.add('hidden');
             } else if (!settingsSection.classList.contains('hidden')) {
-                // Only close if expanded
                 toggleSettingsButton.setAttribute('aria-expanded', 'false');
                 settingsSection.classList.add('hidden');
-                toggleFeedOptionsList(false); // Also close feed dropdown
+                toggleFeedOptionsList(false);
             }
         }
         
-        // Only handle media keys when no dialogs are open and no input is focused
         const isInputFocused = document.activeElement.tagName === 'INPUT' || 
                                document.activeElement.tagName === 'TEXTAREA' || 
                                document.activeElement.isContentEditable;
         
         if (!isInputFocused) {
-            // Media key controls
             switch (event.key) {
-                case ' ':  // Spacebar
-                case 'k':  // YouTube-style keyboard shortcut
-                    event.preventDefault(); // Prevent page scrolling with spacebar
+                case ' ':
+                case 'k':
+                    event.preventDefault();
                     togglePlayPause();
                     break;
                 case 'ArrowLeft':
-                case 'j':  // YouTube-style keyboard shortcut
+                case 'j':
                     if (event.ctrlKey || event.metaKey) {
-                        // Skip to previous track with Ctrl/Cmd + Left arrow
                         event.preventDefault();
                         playPreviousTrack();
                     }
                     break;
                 case 'ArrowRight':
-                case 'l':  // YouTube-style keyboard shortcut
+                case 'l':
                     if (event.ctrlKey || event.metaKey) {
-                        // Skip to next track with Ctrl/Cmd + Right arrow
                         event.preventDefault();
                         playNextTrack();
                     }
@@ -1099,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to show feed notifications (updated)
     function showFeedNotification(message, type = 'info') {
-        notificationArea.innerHTML = ''; // Clear previous notifications
+        notificationArea.innerHTML = '';
 
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -1107,7 +1196,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         notificationArea.appendChild(notification);
         
-        // Optional: automatically clear after a delay
         setTimeout(() => {
             if (notificationArea.contains(notification)) {
                 notification.style.opacity = '0';
