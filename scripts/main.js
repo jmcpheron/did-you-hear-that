@@ -372,6 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Since feed data was reloaded, also update the quick playlist dropdown
             populateQuickPlaylistDropdown();
             
+            // Also update the playlist switcher
+            populatePlaylistSwitcher();
+            
             // Restore prior state if possible
             if (lastTrackId && currentTrackId !== lastTrackId) {
                 // Find if the track still exists in the reloaded feeds
@@ -523,6 +526,8 @@ document.addEventListener('DOMContentLoaded', () => {
             populateCustomFeedSelector(allFeeds);
             // Also initialize the quick playlist dropdown
             populateQuickPlaylistDropdown();
+            // Add this line to populate the playlist switcher
+            populatePlaylistSwitcher();
             loadLastState();
         } else {
             console.error("No feeds available to display.");
@@ -624,6 +629,13 @@ document.addEventListener('DOMContentLoaded', () => {
                  const isSelected = item.dataset.feedId === feedId;
                  item.classList.toggle('selected', isSelected);
                  item.setAttribute('aria-selected', String(isSelected));
+             });
+             
+             // Update playlist switcher
+             const buttons = document.querySelectorAll('.playlist-button');
+             buttons.forEach(button => {
+                 const isSelected = button.dataset.feedId === feedId;
+                 button.classList.toggle('active', isSelected);
              });
         } else {
             currentFeedName.textContent = 'Select Feed';
@@ -1723,4 +1735,63 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         await handleAddFeed();
     });
+
+    // --- Playlist Switcher UI ---
+    function populatePlaylistSwitcher() {
+        if (!playlistButtons) return;
+        
+        // Clear existing buttons
+        playlistButtons.innerHTML = '';
+        
+        // Create a button for each feed
+        allFeeds.forEach(feed => {
+            const button = document.createElement('button');
+            button.classList.add('playlist-button');
+            button.dataset.feedId = feed.id;
+            
+            // If this is the currently active feed, mark it as active
+            if (feed.id === currentFeedId) {
+                button.classList.add('active');
+            }
+            
+            // Choose icon based on feed id/content
+            let iconSvg = '';
+            if (feed.id === 'classic-cartoons') {
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 4v1h-2V4c0-.55-.45-1-1-1H9c-.55 0-1 .45-1 1v1H6V4c0-.55-.45-1-1-1s-1 .45-1 1v16c0 .55.45 1 1 1s1-.45 1-1v-1h2v1c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-1h2v1c0 .55.45 1 1 1s1-.45 1-1V4c0-.55-.45-1-1-1s-1 .45-1 1zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/>
+                </svg>`;
+            } else if (feed.id === 'default') {
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+                </svg>`;
+            } else if (feed.id === 'work') {
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>`;
+            }
+            
+            // Create the button structure
+            button.innerHTML = `
+                <div class="playlist-icon">${iconSvg}</div>
+                <span class="playlist-name">${feed.title}</span>
+                <span class="playlist-tracks">${feed.tracks ? feed.tracks.length : 0} tracks</span>
+            `;
+            
+            // Add click handler
+            button.addEventListener('click', () => {
+                // Update active state
+                document.querySelectorAll('.playlist-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                // Switch to this feed
+                switchFeed(feed.id);
+                localStorage.setItem('last_played_feed_id', feed.id);
+            });
+            
+            // Add to container
+            playlistButtons.appendChild(button);
+        });
+    }
 }); 

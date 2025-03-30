@@ -1611,4 +1611,110 @@ video:fullscreen {
     color: var(--text-tertiary);
     font-size: 0.85em;
     margin: 0;
+}
+
+/* Playlist Switcher */
+#playlist-switcher {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-light);
+}
+
+#playlist-switcher h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.playlist-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.playlist-button {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: var(--bg-controls);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.playlist-button:hover {
+    background-color: var(--bg-card-hover);
+    transform: translateX(3px);
+    color: var(--text-primary);
+}
+
+.playlist-button.active {
+    background-color: rgba(var(--accent-rgb), 0.15);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    font-weight: 600;
+}
+
+.playlist-button.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--accent-color);
+}
+
+.playlist-button .playlist-icon {
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.playlist-button .playlist-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.playlist-button .playlist-tracks {
+    margin-left: auto;
+    font-size: 0.85em;
+    color: var(--text-tertiary);
+    background-color: var(--bg-dark);
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+
+/* Update track-list-container to accommodate the new playlist switcher */
+#track-list-container {
+    margin-top: 0;
+}
+
+/* Ensure both playlist columns function correctly on smaller screens */
+@media (max-width: 899px) {
+    .playlist-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .playlist-button {
+        min-width: 120px;
+        flex: 1 1 auto;
+    }
 } 
