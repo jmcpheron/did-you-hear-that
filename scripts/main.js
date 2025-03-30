@@ -145,6 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const playlistSwitcher = document.getElementById('playlist-switcher');
     const playlistButtons = document.querySelector('.playlist-buttons');
     
+    // Playlist toggle functionality
+    const togglePlaylistsButton = document.getElementById('toggle-playlists-button');
+    const playlistButtonsContainer = document.getElementById('playlist-buttons-container');
+
     // --- Initial safety check for album art ---
     // This ensures album art is in a correct state right from the start
     function initializeAlbumArt() {
@@ -1796,6 +1800,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add to container
             playlistButtons.appendChild(button);
+        });
+    }
+
+    // Playlist toggle functionality
+    if (togglePlaylistsButton && playlistButtonsContainer) {
+        togglePlaylistsButton.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle the aria-expanded state
+            this.setAttribute('aria-expanded', !isExpanded);
+            
+            // Toggle the collapsed class on the container
+            playlistButtonsContainer.classList.toggle('collapsed', !isExpanded);
         });
     }
 }); 

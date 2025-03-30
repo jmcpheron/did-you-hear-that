@@ -1613,7 +1613,7 @@ video:fullscreen {
     margin: 0;
 }
 
-/* Playlist Switcher */
+/* Playlist Switcher with Toggle */
 #playlist-switcher {
     margin-bottom: 20px;
     padding: 15px;
@@ -1622,9 +1622,15 @@ video:fullscreen {
     border: 1px solid var(--border-light);
 }
 
-#playlist-switcher h3 {
-    margin-top: 0;
+.playlist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 15px;
+}
+
+#playlist-switcher h3 {
+    margin: 0;
     font-size: 0.95em;
     color: var(--text-secondary);
     font-weight: 600;
@@ -1632,12 +1638,92 @@ video:fullscreen {
     letter-spacing: 1px;
 }
 
-.playlist-buttons {
+.toggle-button {
+    background-color: var(--bg-controls);
+    border: none;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggle-button:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.toggle-button svg {
+    transition: transform 0.3s ease;
+}
+
+#toggle-playlists-button[aria-expanded="false"] svg {
+    transform: rotate(-90deg);
+}
+
+#playlist-buttons-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
 }
 
+#playlist-buttons-container.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-top: 0;
+}
+
+.footer-links {
+    margin-top: 8px;
+    font-size: 0.9em;
+}
+
+.footer-links p {
+    margin: 5px 0;
+}
+
+.version {
+    opacity: 0.7;
+}
+
+.ai-credit {
+    font-size: 0.85em;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Remove GitHub corner styles since we removed the corner */
+.github-corner {
+    display: none;
+}
+
+.subtitle {
+    font-style: italic;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    text-align: center;
+    margin: -15px 0 10px;
+    letter-spacing: 0.5px;
+}
+
+/* Update h2 after subtitle to ensure proper spacing */
+header h2 {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin-top: 10px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Playlist Buttons */
 .playlist-button {
     display: flex;
     align-items: center;
@@ -1707,7 +1793,7 @@ video:fullscreen {
 
 /* Ensure both playlist columns function correctly on smaller screens */
 @media (max-width: 899px) {
-    .playlist-buttons {
+    #playlist-buttons-container {
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
@@ -1717,46 +1803,4 @@ video:fullscreen {
         min-width: 120px;
         flex: 1 1 auto;
     }
-}
-
-.footer-links {
-    margin-top: 8px;
-    font-size: 0.9em;
-}
-
-.footer-links p {
-    margin: 5px 0;
-}
-
-.version {
-    opacity: 0.7;
-}
-
-.ai-credit {
-    font-size: 0.85em;
-    opacity: 0.7;
-    font-style: italic;
-}
-
-/* Remove GitHub corner styles since we removed the corner */
-.github-corner {
-    display: none;
-}
-
-.subtitle {
-    font-style: italic;
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    text-align: center;
-    margin: -15px 0 10px;
-    letter-spacing: 0.5px;
-}
-
-/* Update h2 after subtitle to ensure proper spacing */
-header h2 {
-    font-size: 1.1em;
-    font-weight: 500;
-    margin-top: 10px;
-    color: var(--text-secondary);
-    text-align: center;
 } 
