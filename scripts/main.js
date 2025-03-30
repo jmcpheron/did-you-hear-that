@@ -86,11 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedOptionsList = document.getElementById('feed-options-list');
     const trackCount = document.getElementById('track-count');
     
-    // Side panel elements
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidePanel = document.getElementById('side-panel');
-    const closePanel = document.getElementById('close-panel');
-    const overlay = document.getElementById('overlay');
+    // Collapsible Settings Section elements
+    const settingsSection = document.getElementById('settings-section');
+    const toggleSettingsButton = document.getElementById('toggle-settings-button');
+    const notificationArea = document.getElementById('notification-area');
 
     // --- State Variables ---
     let allFeeds = [];
@@ -225,9 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleFeedOptionsList(false);
         switchFeed(feedId);
         localStorage.setItem('last_played_feed_id', feedId);
-        
-        // Close the side panel when a feed is selected
-        closeSidePanel();
         
         // Update selected state in the list
         const items = feedOptionsList.querySelectorAll('li');
@@ -574,7 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (addedFeedId) {
                     handleCustomFeedSelection(addedFeedId, allFeeds.find(f => f.id === addedFeedId)?.title || 'New Feed');
-                    closeSidePanel(); // Close panel after adding and selecting feed
                 }
             } else {
                 showFeedNotification("No new feeds added (all IDs already exist).", 'error');
@@ -948,57 +943,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Side Panel Functionality ---
-    function openSidePanel() {
-        sidePanel.classList.add('open');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    }
+    // --- Toggle Settings Section Functionality ---
+    toggleSettingsButton.addEventListener('click', () => {
+        const isExpanded = toggleSettingsButton.getAttribute('aria-expanded') === 'true';
+        toggleSettingsButton.setAttribute('aria-expanded', !isExpanded);
+        settingsSection.classList.toggle('hidden');
+        
+        // Optional: Close the feed options list when collapsing the main section
+        if (isExpanded) {
+            toggleFeedOptionsList(false);
+        }
+    });
 
-    function closeSidePanel() {
-        sidePanel.classList.remove('open');
-        overlay.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
-    }
-
-    menuToggle.addEventListener('click', openSidePanel);
-    closePanel.addEventListener('click', closeSidePanel);
-    overlay.addEventListener('click', closeSidePanel);
-
-    // Close side panel with ESC key
+    // Close collapsible section with ESC key
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             if (!helpDialog.classList.contains('hidden')) {
                 helpDialog.classList.add('hidden');
-            } else if (sidePanel.classList.contains('open')) {
-                closeSidePanel();
+            } else if (!settingsSection.classList.contains('hidden')) {
+                // Only close if expanded
+                toggleSettingsButton.setAttribute('aria-expanded', 'false');
+                settingsSection.classList.add('hidden');
+                toggleFeedOptionsList(false); // Also close feed dropdown
             }
         }
     });
 
-    // Function to show feed notifications
+    // Function to show feed notifications (updated)
     function showFeedNotification(message, type = 'info') {
-        // Create a notification element
+        notificationArea.innerHTML = ''; // Clear previous notifications
+
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
         
-        // Add it to the side panel content
-        const panelContent = document.querySelector('.side-panel-content');
+        notificationArea.appendChild(notification);
         
-        // Check if there's already a notification
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
-        
-        // Insert at the top of the panel content
-        panelContent.insertBefore(notification, panelContent.firstChild);
-        
-        // Remove after a delay
+        // Optional: automatically clear after a delay
         setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
+            if (notificationArea.contains(notification)) {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                     if (notificationArea.contains(notification)) {
+                         notificationArea.removeChild(notification); 
+                     } 
+                 }, 300); 
+            }
         }, 3000);
     }
 }); 

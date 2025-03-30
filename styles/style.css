@@ -60,21 +60,21 @@ h1 {
 
 /* Album Art Section */
 #album-art {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 15px;
+    width: 140px; /* Medium size */
+    height: 140px; /* Medium size */
+    margin: 0 auto 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     background-color: var(--bg-controls);
 }
 
 #default-album-art {
-    width: 40px;
-    height: 40px;
+    width: 70px; /* Medium size */
+    height: 70px; /* Medium size */
     color: var(--text-secondary);
 }
 
@@ -553,7 +553,7 @@ h1 {
 
 /* Custom Feeds Management */
 #custom-feeds-container {
-    margin-top: 15px;
+    margin-top: 20px;
     border-top: 1px solid var(--border-color);
     padding-top: 15px;
     display: none;
@@ -721,13 +721,13 @@ footer a:hover {
     }
 
     #album-art {
-        width: 100px;
-        height: 100px;
+        width: 180px; /* Slightly larger on desktop */
+        height: 180px; /* Slightly larger on desktop */
     }
     
     #default-album-art {
-        width: 50px;
-        height: 50px;
+        width: 90px; /* Slightly larger on desktop */
+        height: 90px; /* Slightly larger on desktop */
     }
 
     #player-controls {
@@ -807,224 +807,99 @@ footer a:hover {
     stroke: var(--text-primary);
 }
 
-/* Hamburger Button */
-.hamburger-button {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 24px;
-    height: 24px;
-    background: transparent;
+/* Header Buttons */
+.header-button {
+    background: none;
     border: none;
+    color: var(--text-secondary);
     cursor: pointer;
-    padding: 0;
-    z-index: 10;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.hamburger-button span {
-    width: 24px;
-    height: 3px;
-    background: var(--text-primary);
-    border-radius: 10px;
-    transition: all 0.3s linear;
-    position: relative;
-    transform-origin: 1px;
-}
-
-/* Side Panel */
-.side-panel {
-    position: fixed;
-    top: 0;
-    left: -100%; /* Start off-screen */
-    width: 85%; /* Take up most of the screen on mobile */
-    max-width: 350px; /* But cap the width on larger screens */
-    height: 100vh;
+.header-button:hover {
     background-color: var(--bg-card);
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    transition: left 0.3s ease;
-    overflow-y: auto;
-}
-
-.side-panel.open {
-    left: 0; /* Slide in */
-}
-
-.side-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.side-panel-header h2 {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.side-panel-content {
-    padding: 20px;
-}
-
-/* Overlay */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Close Button */
-.close-button {
-    background: transparent;
-    border: none;
-    font-size: 24px;
-    line-height: 1;
     color: var(--text-primary);
-    cursor: pointer;
-    padding: 5px;
 }
 
-/* Fix header to use flexbox */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.header-button svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+/* Collapsible Section */
+.collapsible-section {
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
     margin-bottom: 20px;
-    padding: 15px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    max-height: 800px; /* Allow enough height for content */
+    border: 1px solid var(--border-color);
 }
 
-/* Feed Management Components */
+.collapsible-section.hidden {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    border-width: 0;
+    transform: translateY(-10px);
+}
+
+.collapsible-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.collapsible-section h3 {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+/* Update Notifications to be inside the collapsible section */
+#notification-area {
+    margin-bottom: 15px;
+}
+
+.notification {
+    /* Styles remain the same, but they will now appear in #notification-area */
+    padding: 12px 15px;
+    border-radius: var(--border-radius-sm);
+    color: white;
+    font-size: 0.9em;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    margin-bottom: 0; /* Only one notification shown at a time in the area */
+}
+
+/* Feed Management Components within collapsible section */
 #feed-selector-container {
     margin-bottom: 25px;
 }
-
 #add-feed-container {
     margin-bottom: 25px;
 }
-
-#add-feed-container form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+#custom-feeds-container {
+    margin-top: 20px;
 }
 
-#add-feed-container input[type="url"] {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    background-color: var(--bg-controls);
-    color: var(--text-primary);
-}
-
-#feed-suggestion {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-}
-
-/* Modal (for Help Dialog) */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1100; /* Above side panel */
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-md);
-    padding: 25px;
-    position: relative;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-}
-
-.modal-content .close-button {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-}
-
-/* Custom Feeds List */
-#custom-feeds-list {
-    list-style: none;
-    padding: 0;
-}
-
-#custom-feeds-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-#custom-feeds-list li:last-child {
-    border-bottom: none;
-}
-
-#custom-feeds-list .feed-url {
-    font-size: 0.8em;
-    color: var(--text-tertiary);
-    margin-top: 5px;
-    word-break: break-all;
-}
-
-#custom-feeds-list .delete-feed {
-    background: none;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    padding: 5px;
-    font-size: 1.2em;
-    transition: color 0.2s ease;
-}
-
-#custom-feeds-list .delete-feed:hover {
-    color: var(--text-error);
-}
-
-/* Update the feed options list styles to fit in a side panel */
-#feed-options-list {
-    border-radius: var(--border-radius-sm);
-    max-height: 200px;
-}
-
-@media (min-width: 768px) {
-    .side-panel {
-        left: -400px; /* A bit wider for desktop */
-    }
-}
-
+/* Track Count */
 .track-count {
     font-size: 0.85em;
     color: var(--text-tertiary);
