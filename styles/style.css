@@ -1717,4 +1717,46 @@ video:fullscreen {
         min-width: 120px;
         flex: 1 1 auto;
     }
+}
+
+.github-corner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+  0%, 100% { transform: rotate(0); }
+  20%, 60% { transform: rotate(-25deg); }
+  40%, 80% { transform: rotate(10deg); }
+}
+
+@media (max-width: 500px) {
+  .github-corner:hover .octo-arm {
+    animation: none;
+  }
+}
+
+.subtitle {
+  font-style: italic;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: -15px 0 10px;
+  letter-spacing: 0.5px;
+}
+
+/* Update h2 after subtitle to ensure proper spacing */
+header h2 {
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-top: 10px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* GitHub corner refinements */
+.github-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
 } 
