@@ -3,115 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Did you hear that?</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <title>AI Audio Player</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div id="audio-player-container">
+        <h1>AI Audio Player</h1>
 
-        <!-- Removed .content-area wrapper -->
-        <h1>Did you hear that?</h1>
-
+        <!-- Feed Management Section -->
         <div id="feed-management">
             <div id="feed-selector-container">
-                 <label for="feed-select">Select Feed:</label>
-                 <select id="feed-select">
-                     <option value="">Loading feeds...</option>
-                 </select>
+                <label for="feed-select">Feed:</label>
+                <select id="feed-select"></select>
+                <a href="examples/custom-feed-guide.md" class="help-link" title="Learn how to create a custom feed" target="_blank">?</a>
             </div>
             <div id="add-feed-container">
-                 <input type="url" id="feed-url-input" placeholder="Paste JSON feed URL here" aria-label="Feed URL Input">
-                 <button id="add-feed-button">Add Feed</button>
-                 <a href="examples/custom-feed-guide.md" target="_blank" class="help-link" title="How to create custom feeds">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                         <circle cx="12" cy="12" r="10"></circle>
-                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                         <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                     </svg>
-                 </a>
+                <input type="url" id="feed-url" placeholder="Enter RSS or JSON feed URL">
+                <button id="add-feed-button">Add Feed</button>
             </div>
-            <!-- Sample feed suggestion -->
+            <div id="feed-notification"></div>
             <div id="feed-suggestion">
-                Try our <a href="javascript:void(0)" id="sample-feed-link">sample feed</a>
+                Try a <a href="#" id="sample-feed-link">sample feed</a> to get started
             </div>
-            <!-- Notification Area -->
-            <div id="feed-notification" role="status" aria-live="polite"></div>
-            <!-- Custom feeds list (only visible when custom feeds exist) -->
+            
+            <!-- Custom Feeds Management UI -->
             <div id="custom-feeds-container">
                 <div class="custom-feeds-header">
                     <h3>Your Custom Feeds</h3>
-                    <button id="toggle-custom-feeds-btn" aria-expanded="false" aria-controls="custom-feeds-list">
-                        <span class="toggle-icon">▼</span> Manage
+                    <button id="toggle-custom-feeds-btn" aria-expanded="false">
+                        <span>Manage</span>
+                        <span class="toggle-icon">▼</span>
                     </button>
                 </div>
-                <ul id="custom-feeds-list" class="hidden">
-                    <!-- Custom feeds will be listed here dynamically -->
-                    <li class="empty-message">No custom feeds added yet.</li>
-                </ul>
+                <ul id="custom-feeds-list" class="hidden"></ul>
             </div>
         </div>
 
-        <!-- Player UI elements moved up -->
+        <!-- Album Art Area -->
         <div id="album-art">
-            <!-- Placeholder SVG (shown when no album art available) -->
-            <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#cccccc"><path d="M6 18h12v-2H6v2zm6-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM21 4H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 12H4V6h16v10z"/></svg>
-            <!-- Custom album art image (hidden by default) -->
-            <img id="custom-album-art" src="" alt="Album artwork" style="display: none;">
+            <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
+            </svg>
+            <img id="custom-album-art" src="" style="display: none;">
         </div>
 
+        <!-- Player Controls -->
         <div id="player-controls">
-             <audio id="audio-element" preload="metadata"></audio>
-
-             <div class="custom-controls">
-                <!-- Time displays and seek bar -->
+            <audio id="audio-player"></audio>
+            <div class="custom-controls">
                 <div class="time-and-seek">
                     <span id="current-time" class="time-display">0:00</span>
-                    <input type="range" id="seek-bar" value="0" step="0.1" aria-label="Seek progress">
-                    <span id="total-duration" class="time-display">--:--</span>
+                    <input type="range" id="seek-bar" value="0" min="0" max="100" step="1">
+                    <span id="duration" class="time-display">0:00</span>
                 </div>
-                <!-- Centered Play/Pause -->
                 <div class="main-control">
-                     <button id="play-pause-button" aria-label="Play">▶️</button>
-                     <!-- Add skip buttons here later if desired -->
+                    <button id="play-pause-button">▶</button>
                 </div>
-                <!-- Playback Speed Controls -->
                 <div class="speed-controls">
-                    <button class="speed-button active" data-speed="1.0" aria-label="Playback speed 1x">1x</button>
-                    <button class="speed-button" data-speed="1.5" aria-label="Playback speed 1.5x">1.5x</button>
-                    <button class="speed-button" data-speed="2.0" aria-label="Playback speed 2x">2x</button>
+                    <button class="speed-button" data-speed="0.5">0.5x</button>
+                    <button class="speed-button active" data-speed="1">1x</button>
+                    <button class="speed-button" data-speed="1.5">1.5x</button>
+                    <button class="speed-button" data-speed="2">2x</button>
                 </div>
-             </div>
+            </div>
         </div>
 
-        <!-- Track Info and List moved below player controls -->
+        <!-- Current Track Information -->
         <div id="current-track-info">
-            <h2 id="track-title">No track selected</h2>
-            <p id="track-description"></p>
+            <h2>No Track Selected</h2>
+            <p>Select a track from the list below to start playing.</p>
         </div>
 
+        <!-- Track List -->
         <div id="track-list-container">
-            <h2>Tracks / Episodes</h2>
-            <ul id="track-list">
-                <!-- Track list will be populated by JavaScript -->
-                <li>Loading tracks...</li>
-            </ul>
+            <h2>Tracks</h2>
+            <ul id="track-list"></ul>
         </div>
 
-        <!-- Removed .player-ui-area wrapper -->
-
-        <!-- Footer -->
         <footer>
-            <p>
-                Found a bug or want to contribute? Check out the
-                <a href="https://github.com/jmcpheron/did-you-hear-that" target="_blank" rel="noopener noreferrer">GitHub repository</a>!
-                We welcome <a href="https://github.com/jmcpheron/did-you-hear-that/issues" target="_blank" rel="noopener noreferrer">issues</a>
-                and <a href="https://github.com/jmcpheron/did-you-hear-that/pulls" target="_blank" rel="noopener noreferrer">pull requests</a>.
-            </p>
+            <p>Created with ❤️ by <a href="https://github.com/anthropic-ai/claude-3-opus" target="_blank">Claude</a></p>
         </footer>
-
     </div>
 
     <script src="scripts/main.js"></script>

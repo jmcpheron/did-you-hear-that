@@ -1,109 +1,125 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --primary-bg: #f8f9fa;
-    --secondary-bg: #ffffff;
-    --controls-bg: #f1f3f5;
-    --text-dark: #343a40;
-    --text-muted: #495057;
-    --text-light-muted: #6c757d;
-    --accent-color: #17a2b8; /* Teal */
-    --accent-darker: #138496;
-    --highlight-bg: #cfefff;
-    --highlight-text: #0a5868;
-    --border-color: #dee2e6;
-    --border-light: #e9ecef;
-    --shadow-color: rgba(0, 0, 0, 0.08);
+    /* Dark theme colors */
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-card-hover: #252525;
+    --bg-controls: #262626;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-tertiary: rgba(255, 255, 255, 0.5);
+    --accent-color: #1DB954; /* Spotify green */
+    --accent-darker: #1aa34a;
+    --accent-rgb: 29, 185, 84; /* RGB values for opacity uses */
+    --border-color: #333333;
+    --border-light: #3a3a3a;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    
+    /* Sizing and spacing */
+    --container-padding: 20px;
+    --border-radius-sm: 6px;
+    --border-radius-md: 10px;
+    --border-radius-lg: 16px;
 }
 
 body {
-    /* font-family: sans-serif; */
-    font-family: 'Nunito', sans-serif;
-    line-height: 1.5; /* Adjusted for mobile */
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove body padding for mobile */
-    background-color: var(--primary-bg);
-    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #audio-player-container {
-    display: flex; /* Still use flex for centering/alignment if needed */
+    display: flex;
     flex-direction: column;
-    /* height: 100vh; Remove fixed height */
-    min-height: 100vh; /* Ensure it fills viewport height */
-    max-width: 100%; /* Full width on mobile */
-    margin: 0 auto;
-    background: var(--secondary-bg);
-    padding: 15px; /* Add padding back */
-    border-radius: 0; /* No radius on mobile */
-    box-shadow: none; /* No shadow on mobile initially */
-    /* overflow: hidden; Remove hidden overflow, let it scroll */
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(180deg, #1c1c1c 0%, var(--bg-dark) 100%);
+    padding: var(--container-padding);
+    box-sizing: border-box;
+    position: relative;
+    overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 h1 {
     text-align: center;
-    color: var(--text-muted);
-    margin: 10px 0 20px 0; /* Adjusted margins */
-    font-size: 1.5em;
+    color: var(--text-primary);
+    margin: 10px 0 25px 0;
+    font-size: 1.7em;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
-/* Add some spacing after player controls */
-#player-controls {
-    margin-bottom: 30px; /* Increased from 25px - Space before track info */
-    text-align: center;
-    border-bottom: 1px solid var(--border-light); /* Separate controls visually */
-    padding-bottom: 15px; /* Padding above border */
-}
-
+/* Album Art Section */
 #album-art {
-    width: 140px; /* Increased from 80px */
-    height: 140px; /* Increased from 80px */
-    background-color: var(--controls-bg);
-    border-radius: 8px; /* Slightly increased radius */
-    margin: 0 auto 20px auto; /* More space below */
+    width: 220px;
+    height: 220px;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    margin: 0 auto 30px auto;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#album-art:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
 
 #album-art svg {
-     width: 70px; /* Increased from 48px */
-     height: 70px; /* Increased from 48px */
-     fill: var(--border-color);
+    width: 80px;
+    height: 80px;
+    fill: var(--text-tertiary);
 }
 
 #custom-album-art {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ensures the image covers the area without distorting */
+    object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;
 }
 
-/* --- Custom Player Controls --- */
+/* Player Controls Section */
+#player-controls {
+    margin-bottom: 30px;
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
 .custom-controls {
     display: flex;
-    flex-direction: column; /* Stack time/seek and main controls */
+    flex-direction: column;
     align-items: center;
-    gap: 8px; /* Space between rows */
-    margin-top: 0;
+    gap: 15px;
     width: 100%;
-    background-color: transparent; /* Remove background from container */
     padding: 0;
-    border-radius: 0;
 }
 
 .time-and-seek {
     display: flex;
     align-items: center;
     width: 100%;
-    gap: 8px;
+    gap: 12px;
+    padding: 0 5px;
 }
 
 .main-control {
@@ -111,190 +127,176 @@ h1 {
     justify-content: center;
     align-items: center;
     width: 100%;
-    margin-top: 5px; /* Space above main button */
+    margin: 10px 0;
 }
 
 #play-pause-button {
-    background: none;
+    background: var(--accent-color);
     border: none;
-    font-size: 3.5em; /* Larger central button */
+    font-size: 2em;
     cursor: pointer;
-    padding: 0 10px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+    padding: 0;
     line-height: 1;
-    color: var(--accent-color);
-    transition: color 0.2s ease;
-    /* Add margin if needed around it */
 }
 
 #play-pause-button:hover {
-    color: var(--accent-darker);
+    background-color: var(--accent-darker);
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(var(--accent-rgb), 0.4);
 }
 
 #seek-bar {
     flex-grow: 1;
-    height: 6px; /* Thinner bar for mobile */
+    height: 6px;
     cursor: pointer;
     appearance: none;
-    background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--seek-before-percent, 0%), var(--border-color) var(--seek-before-percent, 0%), var(--border-color) 100%);
+    background: linear-gradient(
+        to right,
+        var(--accent-color) 0%,
+        var(--accent-color) var(--seek-before-percent, 0%),
+        var(--border-color) var(--seek-before-percent, 0%),
+        var(--border-color) 100%
+    );
     border-radius: 3px;
     outline: none;
 }
 
-/* Style the thumb */
 #seek-bar::-webkit-slider-thumb {
     appearance: none;
     width: 16px;
     height: 16px;
-    background: var(--accent-color);
+    background: var(--text-primary);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 3px rgba(0,0,0,0.15);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease;
+}
+
+#seek-bar::-webkit-slider-thumb:hover,
+#seek-bar::-webkit-slider-thumb:active {
+    transform: scale(1.2);
 }
 
 #seek-bar::-moz-range-thumb {
     width: 16px;
     height: 16px;
-    background: var(--accent-color);
+    background: var(--text-primary);
     border-radius: 50%;
     cursor: pointer;
     border: none;
-    box-shadow: 0 0 3px rgba(0,0,0,0.15);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease;
+}
+
+#seek-bar::-moz-range-thumb:hover,
+#seek-bar::-moz-range-thumb:active {
+    transform: scale(1.2);
 }
 
 .time-display {
     font-size: 0.85em;
-    color: var(--text-muted);
-    min-width: 35px;
+    color: var(--text-secondary);
+    min-width: 40px;
     text-align: center;
     font-variant-numeric: tabular-nums;
 }
 
-/* --- Feed Management --- */
-#feed-management {
-    margin-bottom: 25px;
+/* Playback Speed Controls */
+.speed-controls {
+    margin-top: 15px;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-#feed-selector-container,
-#add-feed-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: center; /* Center items horizontally */
-}
-
-#add-feed-container input[type="url"] {
-    flex-grow: 1; /* Allow input to take available space */
-    padding: 6px 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 0.9em;
-    max-width: 300px; /* Prevent it from getting too wide */
-}
-
-#add-feed-button {
-    padding: 6px 12px;
-    border: none;
-    background-color: var(--accent-color);
-    color: var(--secondary-bg);
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: inherit;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-}
-
-#add-feed-button:hover {
-    background-color: var(--accent-darker);
-}
-
-.help-link {
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    transition: color 0.2s ease, background-color 0.2s ease;
+    gap: 10px;
 }
 
-.help-link:hover {
-    color: var(--accent-color);
-    background-color: var(--primary-bg);
-}
-
-#feed-suggestion {
-    font-size: 0.85em;
+.speed-button {
+    background-color: var(--bg-controls);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    font-size: 0.9em;
+    font-weight: 500;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 45px;
     text-align: center;
-    margin-top: 5px;
-    color: var(--text-muted);
 }
 
-#feed-suggestion a {
-    color: var(--accent-color);
-    text-decoration: none;
-    font-weight: bold;
+.speed-button.active {
+    background-color: var(--accent-color);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.3);
 }
 
-#feed-suggestion a:hover {
-    text-decoration: underline;
+.speed-button:hover:not(.active) {
+    background-color: var(--bg-card-hover);
+    border-color: var(--accent-color);
 }
 
-/* --- Feed Selector (specific adjustments if needed) --- */
-#feed-selector-container {
-    /* Existing styles seem okay, maybe just ensure centering */
-}
-
-/* --- End Feed Management --- */
-
-/* --- Current Track Info --- */
+/* Current Track Info */
 #current-track-info {
-    margin-bottom: 20px;
-    padding: 12px 15px;
-    background-color: var(--primary-bg); /* Use primary bg */
-    border-radius: 8px;
-    border: 1px solid var(--border-light);
+    margin-bottom: 25px;
+    padding: 16px;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    transition: transform 0.2s ease;
+}
+
+#current-track-info:hover {
+    transform: translateY(-2px);
 }
 
 #current-track-info h2 {
-    margin: 0 0 5px 0;
-    color: var(--text-dark);
-    font-size: 1.1em;
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+    font-size: 1.2em;
+    font-weight: 600;
 }
 
 #current-track-info p {
     margin-bottom: 0;
-    font-size: 0.9em;
-    color: var(--text-muted);
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
-/* --- Track List --- */
+/* Track List */
 #track-list-container {
-    margin-bottom: 10px; /* Remove bottom padding effect */
+    margin-bottom: 20px;
 }
 
 #track-list-container h2 {
-    color: var(--text-muted);
-    font-size: 1em;
-    font-weight: bold;
-    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-left: 2px;
 }
 
 #track-list {
     list-style: none;
     padding: 0;
-    border: none; /* Remove border */
-    border-radius: 0;
-    overflow: visible;
+    border: none;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background-color: var(--bg-card);
 }
 
 #track-list li {
-    padding: 10px 0; /* Less padding, only top/bottom */
-    border-bottom: 1px solid var(--border-light);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: background-color 0.2s ease;
     display: flex;
@@ -306,200 +308,218 @@ h1 {
     border-bottom: none;
 }
 
-/* #track-list li:hover { 
-    background-color: #f1f3f5; /* Less emphasis on hover on mobile? */
-/* } */
+#track-list li:hover {
+    background-color: var(--bg-card-hover);
+}
 
 #track-list li.playing {
-    font-weight: bold;
-    background-color: transparent; /* Remove background highlight */
-    color: var(--accent-darker); /* Use accent color for text */
+    background-color: rgba(var(--accent-rgb), 0.1);
+    font-weight: 500;
+    color: var(--accent-color);
+    position: relative;
+}
+
+#track-list li.playing::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--accent-color);
 }
 
 #track-list li.playing .track-progress {
-    color: var(--accent-color); /* Keep progress colored */
+    color: var(--accent-color);
 }
 
 /* Style for the progress time text in the list */
 .track-progress {
-    margin-left: 10px;
+    margin-left: 12px;
     font-size: 0.85em;
-    color: var(--text-light-muted);
+    color: var(--text-tertiary);
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
 
-/* --- Desktop Adjustments --- */
-@media (min-width: 768px) {
-    body {
-        padding: 20px; /* Re-add body padding */
-    }
-
-    #audio-player-container {
-        max-width: 700px;
-        /* height: auto; Let height be auto on desktop */
-        min-height: auto; /* Remove min-height constraint */
-        border-radius: 12px; /* Restore radius */
-        box-shadow: 0 4px 15px var(--shadow-color); /* Restore shadow */
-        padding: 25px 30px; /* Restore padding */
-    }
-
-    #album-art {
-        width: 200px; /* Increased from 120px */
-        height: 200px; /* Increased from 120px */
-        border-radius: 10px; /* Larger radius for desktop */
-    }
-    
-    #album-art svg {
-        width: 90px; /* Increased from 60px */
-        height: 90px;
-    }
-
-    #player-controls {
-        border-bottom: 1px solid var(--border-color); /* Keep border for desktop too */
-        margin-bottom: 30px; /* More space */
-        padding-bottom: 20px;
-    }
-
-    /* Optional: Restore previous side-by-side controls on desktop */
-    /*
-    .custom-controls {
-        flex-direction: row;
-        background-color: var(--controls-bg); 
-        padding: 10px 15px;
-        border-radius: 8px;
-    } 
-    .time-and-seek { order: 1; flex-grow: 1; margin-right: 15px; }
-    .main-control { order: 2; width: auto; margin: 0; }
-    #play-pause-button { font-size: 2.2em; }
-    */
-}
-
-/* --- Playback Speed Controls --- */
-.speed-controls {
-    margin-top: 10px; /* Space above speed buttons */
+/* Feed Management UI - Make it more subtle and integrated */
+#feed-management {
+    margin-bottom: 30px;
     display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: var(--bg-card);
+    padding: 16px;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#feed-selector-container,
+#add-feed-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     justify-content: center;
-    gap: 10px;
 }
 
-.speed-button {
-    background-color: var(--controls-bg);
-    border: 1px solid var(--border-light);
-    color: var(--text-muted);
-    padding: 5px 10px;
-    font-size: 0.8em;
-    font-weight: bold;
-    border-radius: 15px; /* Rounded corners */
+#feed-select {
+    padding: 8px 12px;
+    background-color: var(--bg-controls);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: inherit;
+    font-size: 0.95em;
+    min-width: 200px;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    min-width: 40px; /* Ensure consistent width */
-    text-align: center;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255, 255, 255, 0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px;
 }
 
-.speed-button.active,
-.speed-button:hover {
+#feed-selector-container label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+#add-feed-container input[type="url"] {
+    flex-grow: 1;
+    padding: 8px 12px;
+    background-color: var(--bg-controls);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: inherit;
+    font-size: 0.95em;
+    max-width: 300px;
+}
+
+#add-feed-container input[type="url"]::placeholder {
+    color: var(--text-tertiary);
+}
+
+#add-feed-button {
+    padding: 8px 14px;
+    border: none;
     background-color: var(--accent-color);
-    color: var(--secondary-bg);
-    border-color: var(--accent-color);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
 }
 
-/* --- End Playback Speed Controls --- */
+#add-feed-button:hover {
+    background-color: var(--accent-darker);
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.3);
+}
 
+.help-link {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    background-color: var(--bg-controls);
+}
 
-/* --- Footer --- */
-footer {
-    margin-top: 30px; /* Space above footer */
-    padding-top: 20px; /* Space within footer */
-    border-top: 1px solid var(--border-light);
-    text-align: center;
+.help-link:hover {
+    color: var(--text-primary);
+    background-color: var(--border-color);
+}
+
+#feed-suggestion {
     font-size: 0.85em;
-    color: var(--text-light-muted);
-}
-
-footer p {
-    margin: 0;
-}
-
-footer a {
-    color: var(--accent-darker);
-    text-decoration: none;
-}
-
-footer a:hover {
-    text-decoration: underline;
-}
-
-/* --- End Footer --- */
-
-/* --- Feed Notification Area --- */
-#feed-notification {
-    padding: 10px 15px;
-    margin-top: 10px;
-    border-radius: 6px;
-    font-size: 0.9em;
-    font-weight: bold;
     text-align: center;
-    display: none; /* Hidden by default */
+    color: var(--text-tertiary);
+}
+
+#feed-suggestion a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#feed-suggestion a:hover {
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+/* Feed Notification Area */
+#feed-notification {
+    padding: 12px 15px;
+    margin-top: 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9em;
+    font-weight: 500;
+    text-align: center;
+    display: none;
     border: 1px solid transparent;
 }
 
 #feed-notification.success {
-    background-color: #d4edda; /* Light green */
-    color: #155724; /* Dark green */
-    border-color: #c3e6cb;
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.3);
     display: block;
 }
 
 #feed-notification.error {
-    background-color: #f8d7da; /* Light red */
-    color: #721c24; /* Dark red */
-    border-color: #f5c6cb;
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.3);
     display: block;
 }
 
-/* --- Feed Selector (specific adjustments if needed) --- */
-#feed-selector-container {
-    /* Existing styles seem okay, maybe just ensure centering */
-}
-
-/* --- Custom Feeds Management --- */
+/* Custom Feeds Management */
 #custom-feeds-container {
     margin-top: 15px;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--border-color);
     padding-top: 15px;
-    display: none; /* Hidden by default, shown when custom feeds exist */
+    display: none;
 }
 
 .custom-feeds-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .custom-feeds-header h3 {
     margin: 0;
     font-size: 0.95em;
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 #toggle-custom-feeds-btn {
     background: none;
-    border: none;
+    border: 1px solid var(--border-color);
     color: var(--accent-color);
     font-size: 0.85em;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 5px 10px;
+    border-radius: 15px;
     display: flex;
     align-items: center;
     gap: 5px;
-    font-weight: bold;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 #toggle-custom-feeds-btn:hover {
-    background-color: var(--primary-bg);
+    background-color: rgba(var(--accent-rgb), 0.1);
+    border-color: var(--accent-color);
 }
 
 .toggle-icon {
@@ -515,10 +535,10 @@ footer a:hover {
     list-style: none;
     padding: 0;
     margin: 0;
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
     overflow: hidden;
-    background-color: var(--primary-bg);
+    background-color: var(--bg-controls);
     max-height: 200px;
     overflow-y: auto;
 }
@@ -528,8 +548,8 @@ footer a:hover {
 }
 
 #custom-feeds-list li {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border-light);
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -545,41 +565,108 @@ footer a:hover {
 }
 
 #custom-feeds-list .feed-title {
-    font-weight: bold;
-    color: var(--text-dark);
-    margin-bottom: 3px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
 }
 
 #custom-feeds-list .feed-url {
     font-size: 0.85em;
-    color: var(--text-light-muted);
+    color: var(--text-tertiary);
     word-break: break-all;
 }
 
 #custom-feeds-list .delete-btn {
     background: none;
     border: none;
-    color: #dc3545; /* Bootstrap danger red */
+    color: #e74c3c;
     cursor: pointer;
     font-size: 1.1em;
-    padding: 5px;
+    padding: 6px;
     margin-left: 8px;
-    border-radius: 3px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 #custom-feeds-list .delete-btn:hover {
-    background-color: rgba(220, 53, 69, 0.1); /* Light red background on hover */
+    background-color: rgba(231, 76, 60, 0.15);
 }
 
 #custom-feeds-list .empty-message {
-    color: var(--text-light-muted);
+    color: var(--text-tertiary);
     font-style: italic;
     text-align: center;
+    padding: 15px 0;
 }
 
-/* --- End Custom Feeds Management --- */
+/* Footer */
+footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--text-tertiary);
+}
 
-/* --- Feed Selector (specific adjustments if needed) --- */
-#feed-selector-container {
-    /* Existing styles seem okay, maybe just ensure centering */
+footer p {
+    margin: 0;
+}
+
+footer a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+/* Desktop Adjustments */
+@media (min-width: 768px) {
+    body {
+        padding: 0;
+        background: linear-gradient(135deg, #1c1c1c 0%, #121212 100%);
+    }
+
+    #audio-player-container {
+        max-width: 450px;
+        min-height: auto;
+        height: auto;
+        max-height: 90vh;
+        border-radius: var(--border-radius-lg);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        padding: 25px;
+        overflow-y: auto;
+        margin: 25px auto;
+    }
+
+    #album-art {
+        width: 250px;
+        height: 250px;
+    }
+    
+    #album-art svg {
+        width: 100px;
+        height: 100px;
+    }
+
+    #player-controls {
+        margin-bottom: 35px;
+        padding-bottom: 25px;
+    }
+    
+    /* Optional - animated focus effect for seek bar on desktop */
+    #seek-bar:focus {
+        height: 8px;
+    }
+
+    /* Optional: Add subtle hover animations to track list items */
+    #track-list li:hover {
+        transform: translateX(3px);
+    }
 } 
