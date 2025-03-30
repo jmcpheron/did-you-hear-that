@@ -136,6 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleSettingsButton = document.getElementById('toggle-settings-button');
     const notificationArea = document.getElementById('notification-area');
 
+    // Quick Playlist Selector
+    const quickPlaylistSelector = document.getElementById('quick-playlist-selector');
+    const quickPlaylistButton = document.getElementById('quick-playlist-button');
+    const quickPlaylistDropdown = document.getElementById('quick-playlist-dropdown');
+    
     // --- Initial safety check for album art ---
     // This ensures album art is in a correct state right from the start
     function initializeAlbumArt() {
@@ -346,39 +351,66 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to reload feeds
     async function reloadFeeds() {
         console.log("Reloading feeds...");
-        showNotification("Reloading feeds...");
+        reloadFeedsButton.disabled = true;
+        reloadFeedsButton.style.opacity = 0.5;
         
-        // Save current state before reload
-        const wasPlaying = !audioPlayer.paused;
-        const currentTime = audioPlayer.currentTime;
-        const savedTrackId = currentTrackId;
-        const savedFeedId = currentFeedId;
-        
-        // Reload all feeds
-        await initializeFeeds();
-        
-        // If we were previously playing a track, try to restore it
-        if (savedTrackId && savedFeedId) {
-            // Make sure the saved feed is still selected
-            if (currentFeedId !== savedFeedId) {
-                switchFeed(savedFeedId);
-            }
+        try {
+            // Save current state - what track and feed were playing
+            const lastTrackId = currentTrackId;
+            const wasPlaying = !audioPlayer.paused;
+            const currentTime = audioPlayer.currentTime;
             
-            // Find the track and play it at the previous position
-            const trackElement = trackList.querySelector(`li[data-track-id="${savedTrackId}"]`);
-            if (trackElement) {
-                trackElement.click();
-                audioPlayer.currentTime = currentTime;
+            // Reset state temporarily to show reload in progress
+            currentFeedName.textContent = "Reloading feeds...";
+            
+            // Clear existing feed data
+            allFeeds = [];
+            
+            // Re-initialize with fresh data
+            await initializeFeeds();
+            
+            // Since feed data was reloaded, also update the quick playlist dropdown
+            populateQuickPlaylistDropdown();
+            
+            // Restore prior state if possible
+            if (lastTrackId && currentTrackId !== lastTrackId) {
+                // Find if the track still exists in the reloaded feeds
+                const feedWithTrack = allFeeds.find(feed => 
+                    feed.tracks && feed.tracks.some(track => track.id === lastTrackId)
+                );
                 
-                if (wasPlaying) {
-                    audioPlayer.play()
-                        .then(() => console.log("Playback resumed after reload"))
-                        .catch(err => console.error("Error resuming playback:", err));
+                if (feedWithTrack) {
+                    // Switch to the feed containing the track
+                    switchFeed(feedWithTrack.id);
+                    
+                    // Try to restore track and position
+                    try {
+                        const track = feedWithTrack.tracks.find(t => t.id === lastTrackId);
+                        if (track) {
+                            playTrack(lastTrackId, wasPlaying);
+                            
+                            // Restore time position
+                            if (currentTime > 0) {
+                                audioPlayer.currentTime = currentTime;
+                                if (isCurrentTrackVideo) {
+                                    videoArtDisplay.currentTime = currentTime;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Failed to restore previous track after reload:", e);
+                    }
                 }
             }
+            
+            showNotification("Feeds reloaded successfully", "success");
+        } catch (error) {
+            console.error("Error reloading feeds:", error);
+            showNotification("Failed to reload feeds", "error");
+        } finally {
+            reloadFeedsButton.disabled = false;
+            reloadFeedsButton.style.opacity = 1;
         }
-        
-        showNotification("Feeds reloaded successfully!");
     }
     
     // Show notification message with type support
@@ -489,6 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Populate UI and Load State
         if (allFeeds.length > 0) {
             populateCustomFeedSelector(allFeeds);
+            // Also initialize the quick playlist dropdown
+            populateQuickPlaylistDropdown();
             loadLastState();
         } else {
             console.error("No feeds available to display.");
@@ -568,7 +602,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         currentFeedId = feedId;
-        currentTracks = selectedFeed.tracks || [];
+        
+        // Ensure each track has feed information for metadata consistency
+        currentTracks = (selectedFeed.tracks || []).map(track => ({
+            ...track,
+            feedId: selectedFeed.id,
+            feedTitle: selectedFeed.title
+        }));
+        
         populateTrackList(currentTracks);
 
         resetPlayerUI();
@@ -604,6 +645,10 @@ document.addEventListener('DOMContentLoaded', () => {
         trackData.forEach((track, index) => {
             const li = document.createElement('li');
             li.dataset.trackId = track.id;
+            
+            // Also store feed information in the list item for easy access
+            if (track.feedId) li.dataset.feedId = track.feedId;
+            if (track.feedTitle) li.dataset.feedTitle = track.feedTitle;
 
             const titleSpan = document.createElement('span');
             titleSpan.textContent = track.title;
@@ -994,27 +1039,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAlbumArtDisplay(imageUrl) {
         console.log('Updating STATIC album art with URL:', imageUrl);
         
-        // This function should NOT run if a video is supposed to be active
-        if (isCurrentTrackVideo) {
-             console.log("Skipping static art update because video is active.");
-             return; 
-        }
-            
-        const hasValidImageUrl = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '';
-
+        const hasValidImageUrl = !!imageUrl && typeof imageUrl === 'string';
+        
         // Main Album Art
         if (customAlbumArt && defaultAlbumArt) {
             if (hasValidImageUrl) {
-                // Safely update image source with error handling
+                // Set up error handling in case the image can't be loaded
                 const img = new Image();
                 img.onload = function() {
                     customAlbumArt.src = imageUrl;
                     customAlbumArt.style.display = 'block';
                     defaultAlbumArt.style.display = 'none';
-                    console.log('Successfully loaded custom album art');
                 };
                 img.onerror = function() {
-                    console.warn('Failed to load album art from URL:', imageUrl);
+                    console.warn('Error loading album art image:', imageUrl);
                     customAlbumArt.src = '';
                     customAlbumArt.style.display = 'none';
                     defaultAlbumArt.style.display = 'block';
@@ -1024,12 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 customAlbumArt.src = '';
                 customAlbumArt.style.display = 'none';
                 defaultAlbumArt.style.display = 'block';
-                console.log('Displaying default album art (no valid URL)');
             }
-        } else {
-            console.warn('Album art elements not found:', 
-                        customAlbumArt ? 'customAlbumArt found' : 'customAlbumArt missing', 
-                        defaultAlbumArt ? 'defaultAlbumArt found' : 'defaultAlbumArt missing');
         }
 
         // Track Info Album Art
@@ -1064,17 +1097,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Ensure track has complete metadata including feed information
+        const enhancedTrack = ensureTrackMetadata(track);
+
         const isNewTrack = currentTrackId !== trackId;
-        isCurrentTrackVideo = isVideoUrl(track.audioUrl);
+        isCurrentTrackVideo = isVideoUrl(enhancedTrack.audioUrl);
         
         if (isNewTrack) {
             resetPreviousTrackProgress();
-            currentTrackId = track.id;
+            currentTrackId = enhancedTrack.id;
             
             // Set source for audio player regardless of type
-            audioPlayer.src = track.audioUrl; 
+            audioPlayer.src = enhancedTrack.audioUrl; 
             
-            updateTrackInfo(track);
+            updateTrackInfo(enhancedTrack);
             updatePlayingClass(trackId);
             
             // Clear any previous video errors
@@ -1082,16 +1118,16 @@ document.addEventListener('DOMContentLoaded', () => {
                        
             // Handle visual display (Video or Static Art)
             if (isCurrentTrackVideo) {
-                console.log("Loading video track:", track.title);
+                console.log("Loading video track:", enhancedTrack.title);
                 
                 // Check if video format is supported by browser
-                const format = getVideoFormat(track.audioUrl);
+                const format = getVideoFormat(enhancedTrack.audioUrl);
                 if (format && !isVideoFormatSupported(format)) {
                     console.warn(`Browser may not support ${format} video format`);
                     showNotification(`Note: Your browser might have limited support for ${format.toUpperCase()} videos`, "warning");
                 }
                 
-                videoArtDisplay.src = track.audioUrl;
+                videoArtDisplay.src = enhancedTrack.audioUrl;
                 videoArtDisplay.style.display = 'block';
                 
                 // Apply video-active class to album art container
@@ -1104,29 +1140,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const videoControls = document.getElementById('video-controls-overlay');
                 if (videoControls) {
                     videoControls.style.display = 'flex';
-                    updateVideoPlayPauseButton(false);
                 }
                 
                 // Set video to unmuted (volume controlled by audio player)
                 videoArtDisplay.muted = false;
                 
-                // Update mute button icon if exists
-                if (videoMuteToggleBtn) {
-                    videoMuteToggleBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                        </svg>
-                    `;
-                }
-                
                 // Hide static album art
                 customAlbumArt.style.display = 'none';
                 defaultAlbumArt.style.display = 'none';
-                trackInfoCustomArt.style.display = 'none';
-                trackInfoDefaultArt.style.display = 'none';
-                trackInfoCustomArt.src = '';
             } else {
-                console.log("Loading MP3/Audio track:", track.title);
+                console.log("Loading MP3/Audio track:", enhancedTrack.title);
                 videoArtDisplay.style.display = 'none';
                 videoArtDisplay.src = '';
                 
@@ -1142,16 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     videoControls.style.display = 'none';
                 }
                 
-                updateAlbumArtDisplay(track.albumArt || null);
-                if (track.albumArt) {
-                    trackInfoCustomArt.src = track.albumArt;
-                    trackInfoCustomArt.style.display = 'block';
-                    trackInfoDefaultArt.style.display = 'none';
-                } else {
-                    trackInfoCustomArt.src = '';
-                    trackInfoCustomArt.style.display = 'none';
-                    trackInfoDefaultArt.style.display = 'block';
-                }
+                updateAlbumArtDisplay(enhancedTrack.albumArt || null);
             }
 
             const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
@@ -1182,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isCurrentTrackVideo) {
                         videoArtDisplay.play()
                             .catch(e => {
-                                handleVideoError(e, track.audioUrl);
+                                handleVideoError(e, enhancedTrack.audioUrl);
                                 // Try to continue audio playback even if video fails
                                 console.log("Continuing with audio-only playback...");
                             }); 
@@ -1193,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     updatePlayPauseButton(false);
                     if (isCurrentTrackVideo) {
                         videoArtDisplay.pause();
-                        handleVideoError(error, track.audioUrl);
+                        handleVideoError(error, enhancedTrack.audioUrl);
                     }
                 });
             }
@@ -1282,15 +1296,42 @@ document.addEventListener('DOMContentLoaded', () => {
          updatePlayingClass(null);
      }
 
-    // --- Update Track Info (Only Text) ---
+    // --- Update Track Info with enhanced metadata handling ---
     function updateTrackInfo(track) {
         if (trackInfoText) {
+            // Ensure track has complete metadata
+            const trackWithMetadata = ensureTrackMetadata(track);
+            
+            // Use feed title as fallback for artist
+            const artistText = trackWithMetadata.artist || trackWithMetadata.feedTitle || 'Unknown Feed';
+            
             trackInfoText.innerHTML = `
-                <h2>${track.title || 'Unknown Title'}</h2>
-                <p>${track.artist || track.feedTitle || 'Unknown Artist'}</p>
+                <h2>${trackWithMetadata.title || 'Unknown Title'}</h2>
+                <p>${artistText}</p>
             `;
         }
         // Album art update is handled by updateAlbumArtDisplay
+    }
+    
+    // Helper function to ensure track metadata is complete
+    function ensureTrackMetadata(track) {
+        if (!track) return { title: 'Unknown Track' };
+        
+        // Create a copy to avoid modifying the original
+        const enhancedTrack = { ...track };
+        
+        // If feed info is missing but we know the current feed, add it
+        if (!enhancedTrack.feedId && currentFeedId) {
+            enhancedTrack.feedId = currentFeedId;
+            
+            // Find feed to get its title
+            const currentFeed = allFeeds.find(f => f.id === currentFeedId);
+            if (currentFeed) {
+                enhancedTrack.feedTitle = currentFeed.title;
+            }
+        }
+        
+        return enhancedTrack;
     }
 
     // --- Progress & State Update ---
@@ -1337,6 +1378,70 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             localStorage.setItem('last_playback_speed', newSpeed);
             updateSpeedButtonActiveState(newSpeed);
+        }
+    });
+
+    // --- Quick Playlist Selector Handling ---
+    function populateQuickPlaylistDropdown() {
+        quickPlaylistDropdown.innerHTML = '';
+        
+        allFeeds.forEach(feed => {
+            const li = document.createElement('li');
+            li.dataset.feedId = feed.id;
+            li.textContent = feed.title;
+            
+            if (feed.id === currentFeedId) {
+                li.classList.add('active');
+            }
+            
+            li.addEventListener('click', () => {
+                handleQuickPlaylistSelection(feed.id, feed.title);
+            });
+            
+            quickPlaylistDropdown.appendChild(li);
+        });
+    }
+    
+    function handleQuickPlaylistSelection(feedId, feedTitle) {
+        // Update dropdown visibility and selection state
+        toggleQuickPlaylistDropdown(false);
+        
+        // Only switch feed if it's different from current
+        if (feedId !== currentFeedId) {
+            switchFeed(feedId);
+            localStorage.setItem('last_played_feed_id', feedId);
+            
+            // Update other feed selectors to maintain UI consistency
+            const feedOptionsListItems = feedOptionsList.querySelectorAll('li');
+            feedOptionsListItems.forEach(item => {
+                const isSelected = item.dataset.feedId === feedId;
+                item.classList.toggle('selected', isSelected);
+                item.setAttribute('aria-expanded', String(isSelected));
+            });
+            
+            if (currentFeedName) {
+                currentFeedName.textContent = feedTitle;
+            }
+        }
+    }
+    
+    function toggleQuickPlaylistDropdown(show) {
+        const expanded = typeof show === 'boolean' ? show : quickPlaylistButton.getAttribute('aria-expanded') === 'false';
+        quickPlaylistButton.setAttribute('aria-expanded', expanded);
+        quickPlaylistDropdown.classList.toggle('hidden', !expanded);
+    }
+    
+    // Initialize quick playlist dropdown when button is clicked
+    quickPlaylistButton.addEventListener('click', (event) => {
+        populateQuickPlaylistDropdown();
+        toggleQuickPlaylistDropdown();
+        event.stopPropagation();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('#quick-playlist-selector')) {
+            toggleQuickPlaylistDropdown(false);
         }
     });
 
@@ -1470,59 +1575,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Video Controls Implementation
-    const videoPlayPauseBtn = document.getElementById('video-play-pause');
-    const videoMuteToggleBtn = document.getElementById('video-mute-toggle');
     const videoFullscreenBtn = document.getElementById('video-fullscreen');
     const videoControlsOverlay = document.getElementById('video-controls-overlay');
-    
-    if (videoPlayPauseBtn) {
-        videoPlayPauseBtn.addEventListener('click', () => {
-            if (!isCurrentTrackVideo) return;
-            
-            if (videoArtDisplay.paused) {
-                videoArtDisplay.play()
-                    .then(() => {
-                        updateVideoPlayPauseButton(true);
-                        // Also play audio if it's paused
-                        if (audioPlayer.paused) {
-                            audioPlayer.play().catch(e => console.error("Error playing audio:", e));
-                            updatePlayPauseButton(true);
-                        }
-                    })
-                    .catch(e => handleVideoError(e, videoArtDisplay.src));
-            } else {
-                videoArtDisplay.pause();
-                updateVideoPlayPauseButton(false);
-                // Also pause audio
-                audioPlayer.pause();
-                updatePlayPauseButton(false);
-            }
-        });
-    }
-    
-    if (videoMuteToggleBtn) {
-        videoMuteToggleBtn.addEventListener('click', () => {
-            if (!isCurrentTrackVideo) return;
-            
-            // Toggle mute state for video
-            videoArtDisplay.muted = !videoArtDisplay.muted;
-            
-            // Update mute button icon
-            if (videoArtDisplay.muted) {
-                videoMuteToggleBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-                    </svg>
-                `;
-            } else {
-                videoMuteToggleBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                    </svg>
-                `;
-            }
-        });
-    }
     
     if (videoFullscreenBtn) {
         videoFullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -1553,25 +1607,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Update video play/pause button state
-    function updateVideoPlayPauseButton(isPlaying) {
-        if (!videoPlayPauseBtn) return;
-        
-        if (isPlaying) {
-            videoPlayPauseBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                </svg>
-            `;
-        } else {
-            videoPlayPauseBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-            `;
-        }
-    }
-    
     // Show video controls when hovering over video
     if (videoControlsOverlay) {
         let controlsTimeout;
@@ -1581,39 +1616,26 @@ document.addEventListener('DOMContentLoaded', () => {
             
             clearTimeout(controlsTimeout);
             videoControlsOverlay.classList.add('active');
-            
-            // Hide controls after 3 seconds of inactivity
-            controlsTimeout = setTimeout(() => {
-                if (videoArtDisplay.paused) {
-                    // Keep controls visible when paused
-                    return;
-                }
-                videoControlsOverlay.classList.remove('active');
-            }, 3000);
         }
         
-        // Show controls when the container is hovered or tapped
+        function hideVideoControls() {
+            if (!isCurrentTrackVideo) return;
+            
+            controlsTimeout = setTimeout(() => {
+                videoControlsOverlay.classList.remove('active');
+            }, 2000);
+        }
+        
         const albumArt = document.getElementById('album-art');
         if (albumArt) {
-            albumArt.addEventListener('mousemove', showVideoControls);
-            albumArt.addEventListener('touchstart', showVideoControls);
+            albumArt.addEventListener('mouseenter', showVideoControls);
+            albumArt.addEventListener('mouseleave', hideVideoControls);
         }
         
-        videoArtDisplay.addEventListener('mousemove', showVideoControls);
-        videoArtDisplay.addEventListener('touchstart', showVideoControls);
-        videoControlsOverlay.addEventListener('mousemove', showVideoControls);
-        videoControlsOverlay.addEventListener('touchstart', showVideoControls);
+        // Keep controls visible while hovering over them
+        videoControlsOverlay.addEventListener('mouseenter', showVideoControls);
+        videoControlsOverlay.addEventListener('mouseleave', hideVideoControls);
     }
-    
-    // Handle fullscreen change event
-    document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement && document.fullscreenElement === videoArtDisplay) {
-            // When entering fullscreen, ensure controls are visible briefly
-            if (videoControlsOverlay) {
-                showVideoControls();
-            }
-        }
-    });
 
     // State Saving/Loading
     window.addEventListener('beforeunload', () => {

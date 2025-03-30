@@ -1394,18 +1394,15 @@ video:fullscreen {
 /* Video controls overlay */
 .video-controls-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-    padding: 15px;
+    bottom: 10px;
+    right: 10px;
+    padding: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: 3;
-    width: 100%;
     box-sizing: border-box;
 }
 
@@ -1416,7 +1413,7 @@ video:fullscreen {
 }
 
 .video-control-button {
-    background: none;
+    background: rgba(0, 0, 0, 0.6);
     border: none;
     color: white;
     cursor: pointer;
@@ -1426,13 +1423,17 @@ video:fullscreen {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    transition: background-color 0.2s ease;
-    margin: 0 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .video-control-button:hover {
-    background-color: rgba(var(--accent-rgb), 0.5);
+    background-color: rgba(var(--accent-rgb), 0.7);
+    transform: scale(1.1);
+}
+
+.video-control-button:active {
+    transform: scale(0.95);
 }
 
 .video-control-button svg {
@@ -1441,39 +1442,117 @@ video:fullscreen {
     fill: white;
 }
 
-/* Video controls sections */
-.video-controls-left,
-.video-controls-center,
-.video-controls-right {
+/* Video controls container */
+.video-controls-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 1;
-}
-
-.video-controls-left {
-    justify-content: flex-start;
-}
-
-.video-controls-right {
-    justify-content: flex-end;
 }
 
 /* Make sure the video controls overlay is visible when the video is active */
 #album-art.video-active .video-controls-overlay {
-    bottom: 0;
-    width: 100%;
+    display: flex;
 }
 
 /* Ensure mobile devices have larger touch targets for controls */
 @media (max-width: 600px) {
     .video-control-button {
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
     }
     
     .video-control-button svg {
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
     }
+}
+
+/* Quick Playlist Selector */
+#quick-playlist-selector {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+#quick-playlist-button {
+    background-color: var(--bg-controls);
+    border: none;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#quick-playlist-button:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+#quick-playlist-button svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+}
+
+#quick-playlist-button[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+#quick-playlist-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    min-width: 180px;
+    max-width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 8px;
+    z-index: 1000;
+    padding: 8px 0;
+    list-style: none;
+    opacity: 1;
+    transform-origin: top right;
+    transition: all 0.2s ease-in-out;
+}
+
+#quick-playlist-dropdown.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#quick-playlist-dropdown li {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#quick-playlist-dropdown li:hover {
+    background-color: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+#quick-playlist-dropdown li.active {
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+/* Current Track Info positioning update */
+#current-track-info {
+    position: relative;
 } 
