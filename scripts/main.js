@@ -91,6 +91,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleSettingsButton = document.getElementById('toggle-settings-button');
     const notificationArea = document.getElementById('notification-area');
 
+    // --- Initial safety check for album art ---
+    // This ensures album art is in a correct state right from the start
+    function initializeAlbumArt() {
+        console.log('Initializing album art...');
+        
+        // Hide custom art and show default if no source is set
+        if (customAlbumArt) {
+            if (!customAlbumArt.src || customAlbumArt.src === window.location.href) {
+                customAlbumArt.style.display = 'none';
+                if (defaultAlbumArt) defaultAlbumArt.style.display = 'block';
+                console.log('Initial state: Using default album art (no custom src)');
+            }
+        }
+        
+        // Same for track info art
+        if (trackInfoCustomArt) {
+            if (!trackInfoCustomArt.src || trackInfoCustomArt.src === window.location.href) {
+                trackInfoCustomArt.style.display = 'none';
+                if (trackInfoDefaultArt) trackInfoDefaultArt.style.display = 'block';
+            }
+        }
+    }
+    
+    // Run the safety check right away
+    initializeAlbumArt();
+
     // --- State Variables ---
     let allFeeds = [];
     let currentFeedId = null;
@@ -647,24 +673,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Consolidated Album Art Update Function ---
     function updateAlbumArtDisplay(imageUrl) {
-        const hasImageUrl = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '';
+        console.log('Updating album art with URL:', imageUrl);
+        
+        const hasValidImageUrl = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '';
 
         // Main Album Art
         if (customAlbumArt && defaultAlbumArt) {
-            if (hasImageUrl) {
+            if (hasValidImageUrl) {
                 customAlbumArt.src = imageUrl;
                 customAlbumArt.style.display = 'block';
                 defaultAlbumArt.style.display = 'none';
+                console.log('Displaying custom album art');
             } else {
                 customAlbumArt.src = '';
                 customAlbumArt.style.display = 'none';
                 defaultAlbumArt.style.display = 'block';
+                console.log('Displaying default album art');
             }
+        } else {
+            console.warn('Album art elements not found:', 
+                        customAlbumArt ? 'customAlbumArt found' : 'customAlbumArt missing', 
+                        defaultAlbumArt ? 'defaultAlbumArt found' : 'defaultAlbumArt missing');
         }
 
         // Track Info Album Art
         if (trackInfoCustomArt && trackInfoDefaultArt) {
-            if (hasImageUrl) {
+            if (hasValidImageUrl) {
                 trackInfoCustomArt.src = imageUrl;
                 trackInfoCustomArt.style.display = 'block';
                 trackInfoDefaultArt.style.display = 'none';

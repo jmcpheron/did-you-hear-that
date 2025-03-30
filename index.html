@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- End Cache Control Meta Tags -->
     <title>did you hear that? | audio player</title>
     <link rel="stylesheet" href="styles/style.css">
 </head>
@@ -56,7 +61,7 @@
 
             <!-- Album Art -->
             <div id="album-art">
-                <img id="custom-album-art" src="" style="display: none;" alt="Album artwork">
+                <img id="custom-album-art" src="" alt="Album artwork">
                 <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                 </svg>
@@ -93,7 +98,7 @@
             <!-- Current Track Info -->
             <div id="current-track-info">
                 <div id="track-info-art">
-                    <img id="track-info-custom-art" style="display: none;" alt="Current track album art">
+                    <img id="track-info-custom-art" src="" alt="Current track artwork">
                     <svg id="track-info-default-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                     </svg>
