@@ -103,6 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (defaultAlbumArt) defaultAlbumArt.style.display = 'block';
                 console.log('Initial state: Using default album art (no custom src)');
             }
+            
+            // Ensure album art container has correct z-index
+            const albumArtContainer = document.getElementById('album-art');
+            if (albumArtContainer) {
+                albumArtContainer.style.zIndex = '1';
+            }
         }
         
         // Same for track info art
@@ -111,6 +117,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 trackInfoCustomArt.style.display = 'none';
                 if (trackInfoDefaultArt) trackInfoDefaultArt.style.display = 'block';
             }
+        }
+        
+        // Ensure controls have higher z-index than album art
+        const playerControls = document.getElementById('player-controls');
+        if (playerControls) {
+            playerControls.style.zIndex = '5';
+        }
+        
+        const trackInfo = document.getElementById('current-track-info');
+        if (trackInfo) {
+            trackInfo.style.zIndex = '5';
         }
     }
     
@@ -390,6 +407,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const canNavigate = currentTracks && currentTracks.length > 1;
         prevButton.disabled = !canNavigate;
         nextButton.disabled = !canNavigate;
+    }
+    
+    // --- Navigate to Previous Track ---
+    function playPreviousTrack() {
+        if (!currentTrackId || !currentTracks || currentTracks.length <= 1) {
+            return; // Can't navigate if no current track or not enough tracks
+        }
+        
+        // Find the index of the current track
+        const currentIndex = currentTracks.findIndex(track => track.id === currentTrackId);
+        if (currentIndex === -1) {
+            return; // Current track not found in the list
+        }
+        
+        // Calculate the previous track index (circular navigation)
+        const previousIndex = currentIndex > 0 ? currentIndex - 1 : currentTracks.length - 1;
+        
+        // Play the previous track
+        playTrack(currentTracks[previousIndex].id, true);
+    }
+    
+    // --- Navigate to Next Track ---
+    function playNextTrack() {
+        if (!currentTrackId || !currentTracks || currentTracks.length <= 1) {
+            return; // Can't navigate if no current track or not enough tracks
+        }
+        
+        // Find the index of the current track
+        const currentIndex = currentTracks.findIndex(track => track.id === currentTrackId);
+        if (currentIndex === -1) {
+            return; // Current track not found in the list
+        }
+        
+        // Calculate the next track index (circular navigation)
+        const nextIndex = (currentIndex + 1) % currentTracks.length;
+        
+        // Play the next track
+        playTrack(currentTracks[nextIndex].id, true);
     }
 
     // --- Custom Feed Management ---
@@ -680,15 +735,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // Main Album Art
         if (customAlbumArt && defaultAlbumArt) {
             if (hasValidImageUrl) {
-                customAlbumArt.src = imageUrl;
-                customAlbumArt.style.display = 'block';
-                defaultAlbumArt.style.display = 'none';
-                console.log('Displaying custom album art');
+                // Safely update image source with error handling
+                const img = new Image();
+                img.onload = function() {
+                    customAlbumArt.src = imageUrl;
+                    customAlbumArt.style.display = 'block';
+                    defaultAlbumArt.style.display = 'none';
+                    console.log('Successfully loaded custom album art');
+                };
+                img.onerror = function() {
+                    console.warn('Failed to load album art from URL:', imageUrl);
+                    customAlbumArt.src = '';
+                    customAlbumArt.style.display = 'none';
+                    defaultAlbumArt.style.display = 'block';
+                };
+                img.src = imageUrl;
             } else {
                 customAlbumArt.src = '';
                 customAlbumArt.style.display = 'none';
                 defaultAlbumArt.style.display = 'block';
-                console.log('Displaying default album art');
+                console.log('Displaying default album art (no valid URL)');
             }
         } else {
             console.warn('Album art elements not found:', 
@@ -699,9 +765,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Track Info Album Art
         if (trackInfoCustomArt && trackInfoDefaultArt) {
             if (hasValidImageUrl) {
-                trackInfoCustomArt.src = imageUrl;
-                trackInfoCustomArt.style.display = 'block';
-                trackInfoDefaultArt.style.display = 'none';
+                // Also setup error handling for track info art
+                const img = new Image();
+                img.onload = function() {
+                    trackInfoCustomArt.src = imageUrl;
+                    trackInfoCustomArt.style.display = 'block';
+                    trackInfoDefaultArt.style.display = 'none';
+                };
+                img.onerror = function() {
+                    trackInfoCustomArt.src = '';
+                    trackInfoCustomArt.style.display = 'none';
+                    trackInfoDefaultArt.style.display = 'block';
+                };
+                img.src = imageUrl;
             } else {
                 trackInfoCustomArt.src = '';
                 trackInfoCustomArt.style.display = 'none';
@@ -900,18 +976,29 @@ document.addEventListener('DOMContentLoaded', () => {
     audioPlayer.addEventListener('play', () => updatePlayPauseButton(true));
     audioPlayer.addEventListener('pause', () => updatePlayPauseButton(false));
     audioPlayer.addEventListener('ended', () => {
+        // Reset UI elements for the current track
         updatePlayPauseButton(false);
         seekBar.value = 0;
         currentTimeDisplay.textContent = formatTime(0);
         seekBar.style.setProperty('--seek-before-percent', '0%');
+        
         if (currentTrackId) {
             updateProgressDisplay(currentTrackId, 0, currentTrackDuration);
             localStorage.setItem(getLocalStorageKey('pos', currentTrackId), '0');
+            
+            // Automatically play the next track if available
+            if (currentTracks && currentTracks.length > 1) {
+                // Small delay before playing next track to ensure UI updates properly
+                setTimeout(() => playNextTrack(), 300);
+            }
         }
     });
 
     // Custom Controls
     playPauseButton.addEventListener('click', togglePlayPause);
+    prevButton.addEventListener('click', playPreviousTrack);
+    nextButton.addEventListener('click', playNextTrack);
+    
     seekBar.addEventListener('input', () => {
         isSeeking = true;
         currentTimeDisplay.textContent = formatTime(seekBar.value);
@@ -963,8 +1050,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Close collapsible section with ESC key
+    // Handle keyboard navigation and shortcuts
     document.addEventListener('keydown', (event) => {
+        // Close dialogs with ESC key
         if (event.key === 'Escape') {
             if (!helpDialog.classList.contains('hidden')) {
                 helpDialog.classList.add('hidden');
@@ -973,6 +1061,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleSettingsButton.setAttribute('aria-expanded', 'false');
                 settingsSection.classList.add('hidden');
                 toggleFeedOptionsList(false); // Also close feed dropdown
+            }
+        }
+        
+        // Only handle media keys when no dialogs are open and no input is focused
+        const isInputFocused = document.activeElement.tagName === 'INPUT' || 
+                               document.activeElement.tagName === 'TEXTAREA' || 
+                               document.activeElement.isContentEditable;
+        
+        if (!isInputFocused) {
+            // Media key controls
+            switch (event.key) {
+                case ' ':  // Spacebar
+                case 'k':  // YouTube-style keyboard shortcut
+                    event.preventDefault(); // Prevent page scrolling with spacebar
+                    togglePlayPause();
+                    break;
+                case 'ArrowLeft':
+                case 'j':  // YouTube-style keyboard shortcut
+                    if (event.ctrlKey || event.metaKey) {
+                        // Skip to previous track with Ctrl/Cmd + Left arrow
+                        event.preventDefault();
+                        playPreviousTrack();
+                    }
+                    break;
+                case 'ArrowRight':
+                case 'l':  // YouTube-style keyboard shortcut
+                    if (event.ctrlKey || event.metaKey) {
+                        // Skip to next track with Ctrl/Cmd + Right arrow
+                        event.preventDefault();
+                        playNextTrack();
+                    }
+                    break;
             }
         }
     });

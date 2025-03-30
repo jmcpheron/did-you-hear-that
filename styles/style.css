@@ -71,6 +71,7 @@ h1 {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     background-color: var(--bg-controls);
     position: relative; /* Ensure proper stacking context */
+    z-index: 1; /* Keep album art behind controls */
 }
 
 #album-art img,
@@ -78,10 +79,15 @@ h1 {
     width: 100%;
     height: 100%;
     display: block; /* Ensure block display */
+    position: absolute; /* Keep within container bounds */
+    top: 0;
+    left: 0;
 }
 
 #album-art img {
     object-fit: cover; /* Ensure image covers the area */
+    max-width: 100%; /* Prevent overflow */
+    max-height: 100%; /* Prevent overflow */
 }
 
 #default-album-art {
@@ -99,6 +105,8 @@ h1 {
     text-align: center;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+    z-index: 5; /* Ensure controls are above album art */
 }
 
 .custom-controls {
@@ -254,6 +262,8 @@ h1 {
     align-items: center;
     gap: 12px;
     border: 1px solid var(--border-light);
+    position: relative;
+    z-index: 5; /* Ensure track info appears above album art */
 }
 
 #current-track-info:hover {
@@ -339,6 +349,8 @@ h1 {
     background-color: var(--bg-card);
     padding: 15px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 4; /* Ensure tracklist is above album art */
 }
 
 #track-list-container h2 {
@@ -742,6 +754,10 @@ footer a:hover {
     #album-art {
         width: 180px;
         height: 180px;
+        position: relative;
+        z-index: 1;
+        /* Clear positioning that might make it overlap */
+        margin: 0 auto 30px; /* Increased bottom margin to prevent overlap */
     }
     
     #default-album-art {
