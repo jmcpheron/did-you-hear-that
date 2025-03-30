@@ -1735,14 +1735,32 @@ document.addEventListener('DOMContentLoaded', () => {
         togglePlaylistsButton.setAttribute('aria-expanded', 'true');
         playlistButtonsContainer.classList.remove('collapsed');
         
-        togglePlaylistsButton.addEventListener('click', function() {
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        // Function to toggle the playlist
+        function togglePlaylist() {
+            const isExpanded = togglePlaylistsButton.getAttribute('aria-expanded') === 'true';
             
             // Toggle the aria-expanded state
-            this.setAttribute('aria-expanded', !isExpanded);
+            togglePlaylistsButton.setAttribute('aria-expanded', !isExpanded);
             
             // Toggle the collapsed class on the container
             playlistButtonsContainer.classList.toggle('collapsed', isExpanded);
+        }
+        
+        // Add click handler to toggle button
+        togglePlaylistsButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent event from bubbling to header
+            togglePlaylist();
         });
+        
+        // Make the entire header clickable
+        const playlistHeader = document.getElementById('playlist-header');
+        if (playlistHeader) {
+            playlistHeader.addEventListener('click', function(e) {
+                // Don't respond if the click is directly on the button (it has its own handler)
+                if (e.target !== togglePlaylistsButton && !togglePlaylistsButton.contains(e.target)) {
+                    togglePlaylist();
+                }
+            });
+        }
     }
 }); 

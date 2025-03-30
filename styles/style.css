@@ -1539,9 +1539,10 @@ video:fullscreen {
 
 .playlist-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 15px;
+    cursor: pointer;
 }
 
 #playlist-switcher h3 {
@@ -1551,6 +1552,7 @@ video:fullscreen {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin-left: 8px;
 }
 
 .toggle-button {
@@ -1565,6 +1567,8 @@ video:fullscreen {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
 }
 
 .toggle-button:hover {
