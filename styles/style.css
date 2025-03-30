@@ -1398,13 +1398,15 @@ video:fullscreen {
     left: 0;
     right: 0;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-    padding: 10px;
+    padding: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: 3;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #album-art:hover .video-controls-overlay,
@@ -1418,14 +1420,15 @@ video:fullscreen {
     border: none;
     color: white;
     cursor: pointer;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: rgba(0, 0, 0, 0.5);
     transition: background-color 0.2s ease;
+    margin: 0 10px;
 }
 
 .video-control-button:hover {
@@ -1433,7 +1436,44 @@ video:fullscreen {
 }
 
 .video-control-button svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     fill: white;
+}
+
+/* Video controls sections */
+.video-controls-left,
+.video-controls-center,
+.video-controls-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.video-controls-left {
+    justify-content: flex-start;
+}
+
+.video-controls-right {
+    justify-content: flex-end;
+}
+
+/* Make sure the video controls overlay is visible when the video is active */
+#album-art.video-active .video-controls-overlay {
+    bottom: 0;
+    width: 100%;
+}
+
+/* Ensure mobile devices have larger touch targets for controls */
+@media (max-width: 600px) {
+    .video-control-button {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .video-control-button svg {
+        width: 26px;
+        height: 26px;
+    }
 } 

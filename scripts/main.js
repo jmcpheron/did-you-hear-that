@@ -1584,8 +1584,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Hide controls after 3 seconds of inactivity
             controlsTimeout = setTimeout(() => {
+                if (videoArtDisplay.paused) {
+                    // Keep controls visible when paused
+                    return;
+                }
                 videoControlsOverlay.classList.remove('active');
             }, 3000);
+        }
+        
+        // Show controls when the container is hovered or tapped
+        const albumArt = document.getElementById('album-art');
+        if (albumArt) {
+            albumArt.addEventListener('mousemove', showVideoControls);
+            albumArt.addEventListener('touchstart', showVideoControls);
         }
         
         videoArtDisplay.addEventListener('mousemove', showVideoControls);
