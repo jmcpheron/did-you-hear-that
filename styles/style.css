@@ -72,10 +72,23 @@ h1 {
     background-color: var(--bg-controls);
 }
 
+#album-art img,
+#album-art svg {
+    width: 100%;
+    height: 100%;
+    display: block; /* Ensure block display */
+}
+
+#album-art img {
+    object-fit: cover; /* Ensure image covers the area */
+}
+
 #default-album-art {
     width: 70px; /* Medium size */
     height: 70px; /* Medium size */
     color: var(--text-secondary);
+    padding: 15%; /* Center the smaller icon within the container */
+    box-sizing: border-box; /* Include padding in size */
 }
 
 #custom-album-art {
@@ -269,19 +282,33 @@ h1 {
     justify-content: center;
 }
 
-#track-info-default-art {
-    width: 24px; /* Size of the default icon */
-    height: 24px;
-    fill: var(--text-tertiary);
+#track-info-art {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    flex-shrink: 0; /* Prevent shrinking */
+    background-color: var(--bg-controls);
+    display: flex; /* Center SVG */
+    align-items: center;
+    justify-content: center;
 }
 
-#track-info-custom-art {
+#track-info-art img,
+#track-info-art svg {
     width: 100%;
     height: 100%;
+    display: block;
+}
+
+#track-info-art img {
     object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
+}
+
+#track-info-default-art {
+    width: 24px; /* Explicit size for small SVG */
+    height: 24px;
+    color: var(--text-secondary);
 }
 
 /* Container for the text */
@@ -721,13 +748,13 @@ footer a:hover {
     }
 
     #album-art {
-        width: 180px; /* Slightly larger on desktop */
-        height: 180px; /* Slightly larger on desktop */
+        width: 180px;
+        height: 180px;
     }
     
     #default-album-art {
-        width: 90px; /* Slightly larger on desktop */
-        height: 90px; /* Slightly larger on desktop */
+        width: 90px;
+        height: 90px;
     }
 
     #player-controls {
@@ -752,6 +779,15 @@ footer a:hover {
     #current-track-info {
         margin-bottom: 10px;
         margin-top: -20px;
+    }
+
+    #track-info-art {
+        width: 50px;
+        height: 50px;
+    }
+    #track-info-default-art {
+        width: 30px;
+        height: 30px;
     }
 }
 

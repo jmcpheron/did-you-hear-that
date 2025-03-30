@@ -645,18 +645,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Update Track Info (modified to include small art) ---
-    function updateTrackInfo(track) {
-        if (trackInfoText) {
-            trackInfoText.innerHTML = `
-                <h2>${track.title || 'Unknown Track'}</h2>
-                <p>${track.description || 'No description available'}</p>
-            `;
+    // --- Consolidated Album Art Update Function ---
+    function updateAlbumArtDisplay(imageUrl) {
+        const hasImageUrl = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '';
+
+        // Main Album Art
+        if (customAlbumArt && defaultAlbumArt) {
+            if (hasImageUrl) {
+                customAlbumArt.src = imageUrl;
+                customAlbumArt.style.display = 'block';
+                defaultAlbumArt.style.display = 'none';
+            } else {
+                customAlbumArt.src = '';
+                customAlbumArt.style.display = 'none';
+                defaultAlbumArt.style.display = 'block';
+            }
         }
-        
-        const imageUrl = track.albumArt || null;
+
+        // Track Info Album Art
         if (trackInfoCustomArt && trackInfoDefaultArt) {
-            if (imageUrl) {
+            if (hasImageUrl) {
                 trackInfoCustomArt.src = imageUrl;
                 trackInfoCustomArt.style.display = 'block';
                 trackInfoDefaultArt.style.display = 'none';
@@ -669,37 +677,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Playback Logic ---
-    function playNextTrack() {
-        if (!currentTracks || currentTracks.length === 0) return;
-        let currentIndex = currentTracks.findIndex(t => t.id === currentTrackId);
-        if (currentIndex === -1) {
-            playTrack(currentTracks[0].id, true);
-        } else {
-            const nextIndex = (currentIndex + 1) % currentTracks.length;
-            playTrack(currentTracks[nextIndex].id, true);
-        }
-    }
-    
-    function playPrevTrack() {
-        if (!currentTracks || currentTracks.length === 0) return;
-        let currentIndex = currentTracks.findIndex(t => t.id === currentTrackId);
-        if (currentIndex <= 0) {
-            const prevIndex = currentTracks.length - 1;
-            playTrack(currentTracks[prevIndex].id, true);
-        } else {
-            const prevIndex = currentIndex - 1;
-            playTrack(currentTracks[prevIndex].id, true);
-        }
-    }
-
-    // --- Event Listeners ---
-    prevButton.addEventListener('click', playPrevTrack);
-    nextButton.addEventListener('click', playNextTrack);
-
-    // Initial button state update
-    updatePrevNextButtonStates();
-
-    // --- Playback Logic ---
     function playTrack(trackId, shouldPlay = true) {
         const track = currentTracks.find(t => t.id === trackId);
         if (!track) {
@@ -709,39 +686,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isNewTrack = currentTrackId !== trackId;
         if (isNewTrack) {
-             resetPreviousTrackProgress();
-             currentTrackId = track.id;
-             audioPlayer.src = track.audioUrl;
-             updateTrackInfo(track);
-             updatePlayingClass(trackId);
-             
-             updateAlbumArt(track.albumArt || null);
+            resetPreviousTrackProgress();
+            currentTrackId = track.id;
+            audioPlayer.src = track.audioUrl;
+            updateTrackInfo(track);
+            updatePlayingClass(trackId);
+            
+            // Use consolidated function
+            updateAlbumArtDisplay(track.albumArt || null);
 
-             const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
-             audioPlayer.playbackRate = savedSpeed;
-             updateSpeedButtonActiveState(savedSpeed);
+            const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
+            audioPlayer.playbackRate = savedSpeed;
+            updateSpeedButtonActiveState(savedSpeed);
 
-             const savedTime = localStorage.getItem(getLocalStorageKey('pos', track.id));
-             audioPlayer.currentTime = savedTime ? parseFloat(savedTime) : 0;
+            const savedTime = localStorage.getItem(getLocalStorageKey('pos', track.id));
+            audioPlayer.currentTime = savedTime ? parseFloat(savedTime) : 0;
 
-             seekBar.value = audioPlayer.currentTime;
-             currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-             durationDisplay.textContent = '--:--';
+            seekBar.value = audioPlayer.currentTime;
+            currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+            durationDisplay.textContent = '--:--';
 
-             localStorage.setItem(getLocalStorageKey('track_id'), track.id);
+            localStorage.setItem(getLocalStorageKey('track_id'), track.id);
         }
 
         if (shouldPlay && (audioPlayer.paused || isNewTrack)) {
-             const playPromise = audioPlayer.play();
-             if (playPromise !== undefined) {
-                 playPromise.then(_ => updatePlayPauseButton(true))
-                          .catch(error => {
-                              console.error("Playback error:", error);
-                              updatePlayPauseButton(false);
-                          });
-             }
+            const playPromise = audioPlayer.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => updatePlayPauseButton(true))
+                         .catch(error => {
+                             console.error("Playback error:", error);
+                             updatePlayPauseButton(false);
+                         });
+            }
         } else if (!shouldPlay) {
-             updatePlayPauseButton(false);
+            updatePlayPauseButton(false);
         }
         updatePrevNextButtonStates();
     }
@@ -791,31 +769,27 @@ document.addEventListener('DOMContentLoaded', () => {
                  <p>Select a track from the list below to start playing.</p>
              `;
          }
-         if (trackInfoCustomArt && trackInfoDefaultArt) {
-             trackInfoCustomArt.src = '';
-             trackInfoCustomArt.style.display = 'none';
-             trackInfoDefaultArt.style.display = 'block';
-         }
+         
+         // Use consolidated function to reset art
+         updateAlbumArtDisplay(null);
+         
          currentTimeDisplay.textContent = '0:00';
          durationDisplay.textContent = '--:--';
          seekBar.value = 0;
          seekBar.max = 0;
          seekBar.style.setProperty('--seek-before-percent', '0%');
          updatePlayingClass(null);
-         updateAlbumArt(null);
      }
 
-    // --- Album Art Handling ---
-    function updateAlbumArt(imageUrl) {
-        if (imageUrl) {
-            customAlbumArt.src = imageUrl;
-            customAlbumArt.style.display = 'block';
-            defaultAlbumArt.style.display = 'none';
-        } else {
-            customAlbumArt.src = '';
-            customAlbumArt.style.display = 'none';
-            defaultAlbumArt.style.display = 'block';
+    // --- Update Track Info (Only Text) ---
+    function updateTrackInfo(track) {
+        if (trackInfoText) {
+            trackInfoText.innerHTML = `
+                <h2>${track.title || 'Unknown Title'}</h2>
+                <p>${track.artist || track.feedTitle || 'Unknown Artist'}</p>
+            `;
         }
+        // Album art update is handled by updateAlbumArtDisplay
     }
 
     // --- Progress & State Update ---
