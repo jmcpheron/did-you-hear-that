@@ -1,6 +1,29 @@
 {
   "feeds": [
     {
+      "id": "classic-cartoons",
+      "title": "Classic Cartoons",
+      "tracks": [
+        {
+          "id": "track4",
+          "title": "Superman: The Mechanical Monsters",
+          "audioUrl": "https://archive.org/download/superman_the_mechanical_monsters/superman_the_mechanical_monsters_512kb.mp4"
+        },
+        {
+          "id": "track-steamboat",
+          "title": "Steamboat Willie",
+          "description": "The classic 1928 Disney cartoon featuring Mickey Mouse, now in the public domain.",
+          "audioUrl": "https://archive.org/download/SteamboatWillie/SteamboatWillie_512kb.mp4"
+        },
+        {
+          "id": "track-skeleton",
+          "title": "Skeleton Frolics",
+          "description": "A 1937 animated cartoon by Ub Iwerks featuring dancing skeletons.",
+          "audioUrl": "https://archive.org/download/pdcartooncollection/Skeleton%20Frolics%201937%20Ub%20Iwerks%5B1%5D.mp4"
+        }
+      ]
+    },
+    {
       "id": "default",
       "title": "Default Fun Stuff",
       "tracks": [
@@ -28,7 +51,7 @@
     },
     {
       "id": "work",
-      "title": "Work Projects Audio",
+      "title": "Sound Board",
       "tracks": [
         {
           "id": "work_beep",
@@ -41,29 +64,6 @@
           "title": "MDN Roar Sample",
           "description": "A T-Rex roar audio sample from MDN (CC0 license).",
           "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"
-        }
-      ]
-    },
-    {
-      "id": "classic-cartoons",
-      "title": "Classic Cartoons",
-      "tracks": [
-        {
-          "id": "track4",
-          "title": "Superman: The Mechanical Monsters",
-          "audioUrl": "https://archive.org/download/superman_the_mechanical_monsters/superman_the_mechanical_monsters_512kb.mp4"
-        },
-        {
-          "id": "track-steamboat",
-          "title": "Steamboat Willie",
-          "description": "The classic 1928 Disney cartoon featuring Mickey Mouse, now in the public domain.",
-          "audioUrl": "https://archive.org/download/SteamboatWillie/SteamboatWillie_512kb.mp4"
-        },
-        {
-          "id": "track-skeleton",
-          "title": "Skeleton Frolics",
-          "description": "A 1937 animated cartoon by Ub Iwerks featuring dancing skeletons.",
-          "audioUrl": "https://archive.org/download/pdcartooncollection/Skeleton%20Frolics%201937%20Ub%20Iwerks%5B1%5D.mp4"
         }
       ]
     }
