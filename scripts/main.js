@@ -372,9 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Re-initialize with fresh data
             await initializeFeeds();
             
-            // Since feed data was reloaded, also update the quick playlist dropdown
-            populateQuickPlaylistDropdown();
-            
             // Also update the playlist switcher
             populatePlaylistSwitcher();
             
@@ -527,8 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Populate UI and Load State
         if (allFeeds.length > 0) {
             populateCustomFeedSelector(allFeeds);
-            // Also initialize the quick playlist dropdown
-            populateQuickPlaylistDropdown();
             // Add this line to populate the playlist switcher
             populatePlaylistSwitcher();
             loadLastState();
