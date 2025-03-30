@@ -1,6 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Constants ---
     const CUSTOM_FEEDS_LS_KEY = 'custom_feed_urls';
+    const DEFAULT_FEED_PATH = 'data/feed.json';
+    
+    // Fallback feed data for when fetch fails
+    const FALLBACK_FEED_DATA = {
+        "feeds": [
+            {
+                "id": "default",
+                "title": "Default Feed",
+                "tracks": [
+                    {
+                        "id": "track1",
+                        "title": "Test Beep Sound",
+                        "description": "A short beep sound effect from SoundJay.",
+                        "audioUrl": "https://www.soundjay.com/buttons/beep-07a.mp3"
+                    },
+                    {
+                        "id": "track2",
+                        "title": "T-Rex Roar Sample",
+                        "description": "A T-Rex roar audio sample from MDN (CC0 license).",
+                        "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3",
+                        "albumArt": "https://picsum.photos/200/200?random=1"
+                    }
+                ]
+            }
+        ]
+    };
+
+    // Sample feed data embedded directly in JavaScript
+    const SAMPLE_FEED_DATA = {
+        "feeds": [
+            {
+                "id": "sample-custom",
+                "title": "Sample Custom Feed",
+                "tracks": [
+                    {
+                        "id": "sample-track-1",
+                        "title": "Getting Started with Custom Feeds",
+                        "description": "This is an example of how to create your own feed for this player.",
+                        "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3",
+                        "albumArt": "https://picsum.photos/200/200?random=1"
+                    },
+                    {
+                        "id": "sample-track-2",
+                        "title": "Another Example Track",
+                        "description": "Just showing that a feed can have multiple tracks.",
+                        "audioUrl": "https://www.soundjay.com/buttons/beep-07a.mp3",
+                        "albumArt": "https://picsum.photos/200/200?random=2"
+                    }
+                ]
+            }
+        ]
+    };
 
     // --- DOM Elements ---
     const audioPlayer = document.getElementById('audio-player');
@@ -55,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Fetch Default Feed
         try {
-            const response = await fetch('data/feed.json');
+            const response = await fetch(DEFAULT_FEED_PATH);
             if (!response.ok) {
                 throw new Error(`HTTP error fetching default feed! status: ${response.status}`);
             }
@@ -67,6 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Default feeds loaded:", defaultFeeds);
         } catch (error) {
             console.error('Error loading default feed:', error);
+            console.log("Using fallback feed data instead");
+            defaultFeeds = FALLBACK_FEED_DATA.feeds;
         }
 
         // 2. Fetch Custom Feeds
@@ -697,13 +751,79 @@ document.addEventListener('DOMContentLoaded', () => {
     addFeedButton.addEventListener('click', handleAddFeed);
     
     sampleFeedLink.addEventListener('click', () => {
-        const currentUrl = window.location.href;
-        const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-        const sampleFeedUrl = baseUrl + 'examples/sample-custom-feed.json';
+        // Check if the sample feed is already added
+        const existingSampleFeed = allFeeds.find(feed => feed.id === 'sample-custom');
         
-        feedUrl.value = sampleFeedUrl;
-        feedUrl.focus();
-        
-        showFeedNotification('Sample feed URL inserted! Click "Add Feed" to use it.', 'success');
+        if (existingSampleFeed) {
+            // If it already exists, just switch to it
+            feedSelect.value = 'sample-custom';
+            handleFeedChange();
+            showFeedNotification('Switched to sample feed!', 'success');
+        } else {
+            // Otherwise, add the sample feed directly without fetching an external file
+            const newFeeds = SAMPLE_FEED_DATA.feeds;
+            
+            let addedCount = 0;
+            
+            newFeeds.forEach(newFeed => {
+                if (allFeeds.some(existingFeed => existingFeed.id === newFeed.id)) {
+                    console.warn(`Sample feed with ID '${newFeed.id}' already exists.`);
+                } else {
+                    // Set a source URL just for identification purposes
+                    newFeed.sourceUrl = 'embedded-sample-feed';
+                    allFeeds.push(newFeed);
+                    
+                    const option = document.createElement('option');
+                    option.value = newFeed.id;
+                    option.textContent = newFeed.title;
+                    feedSelect.appendChild(option);
+                    
+                    addedCount++;
+                }
+            });
+            
+            if (addedCount > 0) {
+                // Save this source URL in local storage for persistence
+                const currentUrls = getCustomFeedUrls();
+                if (!currentUrls.includes('embedded-sample-feed')) {
+                    const newUrls = [...currentUrls, 'embedded-sample-feed'];
+                    saveCustomFeedUrls(newUrls);
+                }
+                
+                // Switch to the sample feed
+                feedSelect.value = 'sample-custom';
+                handleFeedChange();
+                showFeedNotification('Sample feed added successfully!', 'success');
+            } else {
+                showFeedNotification('Sample feed already exists.', 'info');
+            }
+        }
+    });
+
+    // Handle the help dialog
+    const helpButton = document.getElementById('help-button');
+    const helpDialog = document.getElementById('help-dialog');
+    const closeHelpDialogButton = document.getElementById('close-help-dialog');
+
+    helpButton.addEventListener('click', () => {
+        helpDialog.classList.remove('hidden');
+    });
+
+    closeHelpDialogButton.addEventListener('click', () => {
+        helpDialog.classList.add('hidden');
+    });
+
+    // Close dialog when clicking outside the content
+    helpDialog.addEventListener('click', (event) => {
+        if (event.target === helpDialog) {
+            helpDialog.classList.add('hidden');
+        }
+    });
+
+    // Close dialog with ESC key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !helpDialog.classList.contains('hidden')) {
+            helpDialog.classList.add('hidden');
+        }
     });
 }); 

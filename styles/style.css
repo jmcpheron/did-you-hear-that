@@ -669,4 +669,93 @@ footer a:hover {
     #track-list li:hover {
         transform: translateX(3px);
     }
+}
+
+/* Help Dialog */
+#help-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#help-dialog.hidden {
+    display: none;
+}
+
+.help-dialog-content {
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.help-dialog-content h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.2em;
+}
+
+.help-dialog-content p {
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.help-dialog-content pre {
+    background-color: var(--bg-dark);
+    border-radius: var(--border-radius-sm);
+    padding: 12px;
+    overflow-x: auto;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    line-height: 1.4;
+    margin-bottom: 15px;
+}
+
+.help-dialog-content ul {
+    color: var(--text-secondary);
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.help-dialog-content li {
+    margin-bottom: 8px;
+}
+
+.help-dialog-content code {
+    background-color: var(--bg-dark);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+#close-help-dialog {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+}
+
+#close-help-dialog:hover {
+    color: var(--text-primary);
 } 
