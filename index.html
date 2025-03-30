@@ -9,70 +9,79 @@
 </head>
 <body>
     <div id="audio-player-container">
-        <h1>AI Audio Player</h1>
+        <div class="main-header">
+            <h1>AI Audio Player</h1>
+            <button id="manage-feeds-button" title="Manage Feeds">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+        </div>
 
-        <!-- Feed Management Section -->
-        <div id="feed-management">
-            <div id="feed-selector-container">
-                <label for="feed-select">Feed:</label>
-                <select id="feed-select"></select>
-                <button class="help-link" id="help-button" title="Learn how to create a custom feed">?</button>
-            </div>
-            <div id="add-feed-container">
-                <input type="url" id="feed-url" placeholder="Enter RSS or JSON feed URL">
-                <button id="add-feed-button">Add Feed</button>
-            </div>
-            <div id="feed-notification"></div>
-            <div id="feed-suggestion">
-                Try a <a href="#" id="sample-feed-link">sample feed</a> to get started
-            </div>
-            
-            <!-- Custom Feeds Management UI -->
-            <div id="custom-feeds-container">
-                <div class="custom-feeds-header">
-                    <h3>Your Custom Feeds</h3>
-                    <button id="toggle-custom-feeds-btn" aria-expanded="false">
-                        <span>Manage</span>
-                        <span class="toggle-icon">▼</span>
-                    </button>
+        <!-- Feed Management Modal (Hidden by default) -->
+        <div id="feed-modal-overlay" class="modal-overlay hidden">
+            <div id="feed-management" class="modal-content">
+                <button id="close-feed-modal" class="close-modal-button" title="Close">&times;</button>
+                <h2>Manage Feeds</h2> 
+                <div id="feed-selector-container">
+                    <label for="feed-select">Current Feed:</label>
+                    <select id="feed-select"></select>
+                    <button class="help-link" id="help-button" title="Learn how to create a custom feed">?</button>
                 </div>
-                <ul id="custom-feeds-list" class="hidden"></ul>
-            </div>
-
-            <!-- Help Dialog -->
-            <div id="help-dialog" class="hidden">
-                <div class="help-dialog-content">
-                    <h3>Creating Custom Feeds</h3>
-                    <button id="close-help-dialog">×</button>
-                    <p>A custom feed must be a JSON file with the following structure:</p>
-                    <pre>{
-  "feeds": [
-    {
-      "id": "unique-feed-id",
-      "title": "My Custom Feed",
-      "tracks": [
+                <div id="add-feed-container">
+                    <input type="url" id="feed-url" placeholder="Enter JSON feed URL to add">
+                    <button id="add-feed-button">Add Feed</button>
+                </div>
+                <div id="feed-notification"></div>
+                <div id="feed-suggestion">
+                    Try a <a href="#" id="sample-feed-link">sample feed</a> to get started
+                </div>
+                
+                <!-- Custom Feeds Management UI -->
+                <div id="custom-feeds-container">
+                    <div class="custom-feeds-header">
+                        <h3>Your Custom Feeds</h3>
+                        <button id="toggle-custom-feeds-btn" aria-expanded="false">
+                            <span>Manage</span>
+                            <span class="toggle-icon">▼</span>
+                        </button>
+                    </div>
+                    <ul id="custom-feeds-list" class="hidden"></ul>
+                </div>
+    
+                <!-- Help Dialog (already part of feed management) -->
+                <div id="help-dialog" class="hidden">
+                    <div class="help-dialog-content">
+                        <h3>Creating Custom Feeds</h3>
+                        <button id="close-help-dialog">×</button>
+                        <p>A custom feed must be a JSON file with the following structure:</p>
+                        <pre>{
+      "feeds": [
         {
-          "id": "track-1",
-          "title": "Track Title",
-          "audioUrl": "https://example.com/audio.mp3",
-          "description": "About this track",
-          "albumArt": "https://example.com/cover.jpg"
+          "id": "unique-feed-id",
+          "title": "My Custom Feed",
+          "tracks": [
+            {
+              "id": "track-1",
+              "title": "Track Title",
+              "audioUrl": "https://example.com/audio.mp3",
+              "description": "About this track",
+              "albumArt": "https://example.com/cover.jpg"
+            }
+          ]
         }
       ]
-    }
-  ]
-}</pre>
-                    <p>Key requirements:</p>
-                    <ul>
-                        <li>Each feed needs an <code>id</code>, <code>title</code>, and <code>tracks</code> array</li>
-                        <li>Each track needs an <code>id</code>, <code>title</code>, and <code>audioUrl</code></li>
-                        <li>Tracks can include optional <code>description</code> and <code>albumArt</code></li>
-                        <li>Audio URLs can be relative or absolute URLs</li>
-                    </ul>
-                    <p>Try clicking the "sample feed" link to see a working example!</p>
+    }</pre>
+                        <p>Key requirements:</p>
+                        <ul>
+                            <li>Each feed needs an <code>id</code>, <code>title</code>, and <code>tracks</code> array</li>
+                            <li>Each track needs an <code>id</code>, <code>title</code>, and <code>audioUrl</code></li>
+                            <li>Tracks can include optional <code>description</code> and <code>albumArt</code></li>
+                            <li>Audio URLs can be relative or absolute URLs</li>
+                        </ul>
+                        <p>Try clicking the "sample feed" link to see a working example!</p>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </div> <!-- End #feed-management -->
+        </div> <!-- End #feed-modal-overlay -->
 
         <!-- Album Art Area -->
         <div id="album-art">

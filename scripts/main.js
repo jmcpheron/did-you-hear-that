@@ -74,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultAlbumArt = document.getElementById('default-album-art');
     const customAlbumArt = document.getElementById('custom-album-art');
     const feedNotification = document.getElementById('feed-notification');
+    const manageFeedsButton = document.getElementById('manage-feeds-button');
+    const feedModalOverlay = document.getElementById('feed-modal-overlay');
+    const closeFeedModalButton = document.getElementById('close-feed-modal');
 
     // --- State Variables ---
     let allFeeds = [];
@@ -356,9 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
             customAlbumArt.style.display = 'block';
             defaultAlbumArt.style.display = 'none';
         } else {
+            customAlbumArt.src = '';
             customAlbumArt.style.display = 'none';
             defaultAlbumArt.style.display = 'block';
-            customAlbumArt.src = '';
         }
     }
 
@@ -797,6 +800,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showFeedNotification('Sample feed already exists.', 'info');
             }
+        }
+    });
+
+    // --- Modal Handling ---
+    manageFeedsButton.addEventListener('click', () => {
+        feedModalOverlay.classList.remove('hidden');
+    });
+
+    closeFeedModalButton.addEventListener('click', () => {
+        feedModalOverlay.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside the content area
+    feedModalOverlay.addEventListener('click', (event) => {
+        if (event.target === feedModalOverlay) {
+            feedModalOverlay.classList.add('hidden');
+        }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !feedModalOverlay.classList.contains('hidden')) {
+            feedModalOverlay.classList.add('hidden');
         }
     });
 
