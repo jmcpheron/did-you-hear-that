@@ -141,6 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const quickPlaylistButton = document.getElementById('quick-playlist-button');
     const quickPlaylistDropdown = document.getElementById('quick-playlist-dropdown');
     
+    // Playlist Switcher elements
+    const playlistSwitcher = document.getElementById('playlist-switcher');
+    const playlistButtons = document.querySelector('.playlist-buttons');
+    
     // --- Initial safety check for album art ---
     // This ensures album art is in a correct state right from the start
     function initializeAlbumArt() {
