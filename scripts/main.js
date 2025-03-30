@@ -621,7 +621,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTrackId = null;
 
         if (selectedFeed) {
+             // Update the feed name in the dropdown
              currentFeedName.textContent = selectedFeed.title;
+             
+             // Update the playlist name in the track list container
+             const currentPlaylistName = document.getElementById('current-playlist-name');
+             if (currentPlaylistName) {
+                 currentPlaylistName.textContent = selectedFeed.title;
+             }
+             
+             // Update selected state in the feed options list
              const items = feedOptionsList.querySelectorAll('li');
              items.forEach(item => {
                  const isSelected = item.dataset.feedId === feedId;
@@ -637,6 +646,12 @@ document.addEventListener('DOMContentLoaded', () => {
              });
         } else {
             currentFeedName.textContent = 'Select Feed';
+            
+            // Reset the playlist name in the track list container
+            const currentPlaylistName = document.getElementById('current-playlist-name');
+            if (currentPlaylistName) {
+                currentPlaylistName.textContent = 'Playlist';
+            }
         }
     }
 
