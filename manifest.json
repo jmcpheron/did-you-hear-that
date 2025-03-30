@@ -1,0 +1,19 @@
+{
+  "name": "Did You Hear That?",
+  "short_name": "Hear That",
+  "description": "A lightweight web player for your audio clips and podcasts",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1DB954",
+  "icons": [
+    {
+      "src": "sample_audio/clwb.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "orientation": "portrait",
+  "prefer_related_applications": false
+} 

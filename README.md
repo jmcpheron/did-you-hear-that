@@ -2,12 +2,18 @@
 
 A fun, lightweight web player for your personal collection of interesting audio clips, podcasts, AI-generated summaries, and other sound bites you want to keep track of. It uses JSON feeds and saves your progress locally.
 
-## MVP Features
+## Features
 
 *   **MP3 Playback**: Stream audio files defined in a JSON feed.
-*   **JSON Metadata**: Load track information (title, URL, duration) from a `feed.json` file.
+*   **JSON Metadata**: Load track information (title, URL, duration, album art) from a `feed.json` file.
+*   **Multiple Feeds Support**: Add, manage, and switch between multiple audio feeds.
+*   **Playback Controls**: Play/pause, previous/next, and playback speed controls (0.5x, 1.0x, 1.5x, 2.0x).
+*   **Album Art Support**: Display custom album art for feeds and tracks.
 *   **Playback Progress Saving**: Uses browser local storage to remember the playback position for each track.
-*   **Simple UI**: Basic HTML/CSS/JavaScript interface for playback controls.
+*   **Responsive UI**: Modern, clean interface that works on desktop, tablet, and mobile devices.
+*   **Touch-Optimized**: Enhanced touch controls and layouts for tablet and mobile users.
+*   **Custom Feed Management**: Add, remove, and switch between different audio feeds.
+*   **PWA-Ready**: Can be installed as a Progressive Web App on compatible devices.
 
 ## Project Structure
 
@@ -15,13 +21,13 @@ A fun, lightweight web player for your personal collection of interesting audio 
 /
 ├── index.html              # Main HTML structure
 ├── styles/
-│   └── style.css           # Basic styling
+│   └── style.css           # Styling for the player UI
 ├── scripts/
 │   └── main.js             # Core application logic & playback
 ├── data/
-│   └── feed.json           # Metadata for audio feeds/tracks
+│   └── feed.json           # Metadata for default audio feeds/tracks
 ├── sample_audio/           # Contains sample audio files (tracked by Git)
-│   └── *.mp3
+│   └── *.mp3, *.png        # Audio files and album art images
 ├── audio/                  # For **your** local audio files (ignored by Git)
 │   └── .gitignore          # Ignores contents of audio/
 ├── run_server.py           # Simple Python HTTP server script
@@ -31,31 +37,24 @@ A fun, lightweight web player for your personal collection of interesting audio 
 
 ## Quick Start
 
-This section outlines how to set up the project structure and run the player locally once the initial files are created.
+This section outlines how to set up the project structure and run the player locally.
 
 ### Initial Setup
 
-1.  **Create Project Directory:** Make a new folder for your project.
-2.  **Create Files:** Inside the project folder, create the basic files and directories outlined in the **Project Structure** section above (`index.html`, `styles/style.css`, `scripts/main.js`, `data/feed.json`, `sample_audio/*`, `audio/.gitignore`).
-3.  **Populate `data/feed.json`:** Add metadata for your audio tracks according to the **JSON Feed Structure** example.
+1.  **Clone the Repository:** Clone this repository to your local machine.
+2.  **Create Python Environment (Optional):** If you don't already have Python installed, you'll need it to run the local server.
 
-### Local Development (After Setup)
+### Local Development
 
-1.  **Activate Environment:** Open your terminal in the project directory and activate the Python virtual environment:
-    *   On macOS/Linux: `source .venv/bin/activate`
-    *   On Windows (Command Prompt): `.venv\Scripts\activate.bat`
-    *   On Windows (PowerShell): `.venv\Scripts\Activate.ps1`
-    *(Note: If using VS Code with the Python extension, opening the integrated terminal might automatically activate the environment configured in `.vscode/settings.json`.)*
-
-2.  **Run the Server:** With the environment active, run the provided Python server script:
+1.  **Run the Server:** From the project directory, run the provided Python server script:
     ```bash
     python run_server.py
     ```
 
-3.  **Access:** The script will output the address. Open `http://localhost:8000/` in your browser.
-4.  **Stop Server:** Press `Ctrl+C` in the terminal where the server is running.
+2.  **Access:** Open `http://localhost:8000/` in your browser.
+3.  **Stop Server:** Press `Ctrl+C` in the terminal where the server is running.
 
-### Deployment (Once Developed)
+### Deployment
 
 This project consists of static HTML, CSS, and JavaScript files, making it ideal for deployment on [GitHub Pages](https://pages.github.com/).
 
@@ -80,53 +79,71 @@ This project consists of static HTML, CSS, and JavaScript files, making it ideal
     *   Click "Save".
 5.  **Access Site:** GitHub Pages will build and deploy your site. It might take a minute or two. The URL will be provided in the Pages settings section, typically in the format `https://yourusername.github.io/your-repo-name/`.
 
-**Note:** Since this project loads files like `data/feed.json` and `sample_audio/*` using relative paths, simply pushing these files to your GitHub repository makes them accessible to the deployed site. The `audio/` directory is ignored by Git by default and is intended for your private, local files.
-
-## JSON Feed Structure (`data/feed.json`)
+## JSON Feed Structure
 
 The player expects a JSON file structured like this:
 
 ```json
 {
-  "tracks": [
+  "feeds": [
     {
-      "id": "track1",
-      "title": "Chapter 1: The Beginning",
-      "audioUrl": "https://your-hosting.com/path/to/audio1.mp3",
-      "duration": 3600  // Duration in seconds (optional but helpful)
+      "id": "default",
+      "title": "Default Fun Stuff",
+      "tracks": [
+        {
+          "id": "track1",
+          "title": "Episode 1: Introduction",
+          "description": "Welcome to our first episode.",
+          "audioUrl": "sample_audio/episode1.mp3",
+          "albumArt": "sample_audio/cover1.png",
+          "duration": 3600  // Duration in seconds (optional)
+        },
+        {
+          "id": "track2",
+          "title": "Episode 2: Deep Dive",
+          "description": "In this episode, we take a deeper look.",
+          "audioUrl": "sample_audio/episode2.mp3",
+          "albumArt": "sample_audio/cover2.png"
+        }
+      ]
     },
     {
-      "id": "track2",
-      "title": "Chapter 2: The Middle",
-      "audioUrl": "https://your-hosting.com/path/to/audio2.mp3",
-      "duration": 4250
+      "id": "another_feed",
+      "title": "Another Feed",
+      "tracks": [
+        ...
+      ]
     }
-    // Add more tracks as needed
   ]
 }
 ```
 
+## Adding Custom Feeds
+
+You can add your own custom feeds in three ways:
+
+1. **Edit data/feed.json**: Add your feeds directly to the default feed file.
+2. **Add via UI**: Use the "Add Feed" form in the player interface by providing a URL to your feed JSON file.
+3. **Local Files**: Place your MP3s in the `audio/` directory and update your feed JSON to reference them with relative paths.
+
 ## Sample Audio Content
 
-The sample `data/feed.json` file included in this repository uses audio from different sources for demonstration purposes. Some tracks reference files within the `sample_audio/` directory.
+The sample `data/feed.json` file included in this repository uses various audio files for demonstration purposes:
 
-*   **Default Fun Stuff Feed:** The audio files referenced in this feed (e.g., `sample_audio/openai-fm-coral-sports-coach.mp3`) were generated using a demo of OpenAI's audio generation technology, with permission according to their content generation guidelines. **Note:** As per OpenAI's terms, this audio content is AI-generated.
-*   **Work Projects Audio Feed:** This feed uses publicly accessible audio samples for testing CDN/remote URL functionality:
-    *   "Test Beep Sound": From [SoundJay.com](https://www.soundjay.com/) (check their specific license terms if using long-term).
-    *   "MDN Roar Sample": From [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#examples) under a CC0 license.
+*   **Default Fun Stuff Feed**: Includes AI-generated audio content (created with OpenAI's audio generation technology) and other sample clips.
+*   **Work Projects Audio Feed**: Uses publicly accessible audio samples for testing remote URL functionality.
 
-When adding your own content, you can:
-*   Place your MP3s in the `audio/` directory (they won't be tracked by Git) and update `data/feed.json` to point to them using relative paths like `"audio/your_file.mp3"`.
-*   Use full URLs to files hosted on a CDN or elsewhere.
-*   Ensure you have the necessary rights or licenses for the audio files you use.
+When adding your own content, ensure you have the necessary rights or licenses for the audio files you use.
 
 ## Future Enhancements (Potential)
 
-*   Playback speed controls
-*   Skip forward/backward buttons
-*   Visual indication of played tracks
-*   Support for multiple feeds/books
+*   Drag-and-drop playlist reordering
+*   Audio visualization
+*   Dark/light theme toggle
+*   Offline playback support
+*   Audio bookmarks within tracks
+*   Integration with podcast RSS feeds
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details (you may need to create this file). 
+This project is licensed under the MIT License. See the `LICENSE` file for details. 
