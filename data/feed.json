@@ -12,10 +12,11 @@
           "audioUrl": "sample_audio/Claude-math-process_alloy_wizard.mp3"
         },
         {
-          "id": "episode2",
-          "title": "Episode 2: Deep Dive",
+          "id": "99-cent-sif-book",
+          "title": "Cold Logic, Warm Blood",
           "description": "In this episode, we take a deeper look into the subject matter.",
-          "audioUrl": "sample_audio/openai-fm-coral-dramatic.mp3"
+          "audioUrl": "sample_audio/cold-logic-warm-blood.mp3",
+          "albumArt":"sample_audio/clwb.png"
         },
         {
           "id": "episode3",
