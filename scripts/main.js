@@ -74,12 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultAlbumArt = document.getElementById('default-album-art');
     const customAlbumArt = document.getElementById('custom-album-art');
     const feedNotification = document.getElementById('feed-notification');
-    const manageFeedsButton = document.getElementById('manage-feeds-button');
-    const feedModalOverlay = document.getElementById('feed-modal-overlay');
-    const closeFeedModalButton = document.getElementById('close-feed-modal');
     const trackInfoDefaultArt = document.getElementById('track-info-default-art');
     const trackInfoCustomArt = document.getElementById('track-info-custom-art');
     const trackInfoText = document.querySelector('.track-info-text');
+    const toggleFeedSectionButton = document.getElementById('toggle-feed-section');
+    const feedManagementSection = document.getElementById('feed-management-section');
+    const helpButton = document.getElementById('help-button');
+    const helpDialog = document.getElementById('help-dialog');
+    const closeHelpDialogButton = document.getElementById('close-help-dialog');
 
     // --- State Variables ---
     let allFeeds = [];
@@ -810,34 +812,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Modal Handling ---
-    manageFeedsButton.addEventListener('click', () => {
-        feedModalOverlay.classList.remove('hidden');
-    });
-
-    closeFeedModalButton.addEventListener('click', () => {
-        feedModalOverlay.classList.add('hidden');
-    });
-
-    // Close modal when clicking outside the content area
-    feedModalOverlay.addEventListener('click', (event) => {
-        if (event.target === feedModalOverlay) {
-            feedModalOverlay.classList.add('hidden');
+    // --- Collapsible Feed Management Section ---
+    toggleFeedSectionButton.addEventListener('click', () => {
+        const isExpanded = toggleFeedSectionButton.getAttribute('aria-expanded') === 'true';
+        toggleFeedSectionButton.setAttribute('aria-expanded', !isExpanded);
+        
+        if (isExpanded) {
+            // Hide the section
+            feedManagementSection.classList.add('hidden');
+        } else {
+            // Show the section
+            feedManagementSection.classList.remove('hidden');
         }
     });
 
-    // Close modal with ESC key
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !feedModalOverlay.classList.contains('hidden')) {
-            feedModalOverlay.classList.add('hidden');
-        }
-    });
-
-    // Handle the help dialog
-    const helpButton = document.getElementById('help-button');
-    const helpDialog = document.getElementById('help-dialog');
-    const closeHelpDialogButton = document.getElementById('close-help-dialog');
-
+    // --- Help Dialog ---
     helpButton.addEventListener('click', () => {
         helpDialog.classList.remove('hidden');
     });
