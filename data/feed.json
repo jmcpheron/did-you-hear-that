@@ -49,109 +49,21 @@
       "title": "Classic Cartoons",
       "tracks": [
         {
-          "id": "track1",
-          "title": "Popeye the Sailor Meets Sindbad the Sailor",
-          "audioUrl": "https://archive.org/download/Popeye_the_Sailor_Meets_Sindbad_the_Sailor/Popeye_the_Sailor_Meets_Sindbad_the_Sailor_512kb.mp4"
-        },
-        {
-          "id": "track2",
-          "title": "Gulliver's Travels",
-          "audioUrl": "https://archive.org/download/Gullivers_Travels/Gullivers_Travels_512kb.mp4"
-        },
-        {
-          "id": "track3",
-          "title": "Superman: The Arctic Giant",
-          "audioUrl": "https://archive.org/download/superman_the_arctic_giant/superman_the_arctic_giant_512kb.mp4"
-        },
-        {
           "id": "track4",
           "title": "Superman: The Mechanical Monsters",
           "audioUrl": "https://archive.org/download/superman_the_mechanical_monsters/superman_the_mechanical_monsters_512kb.mp4"
         },
         {
-          "id": "track5",
-          "title": "Popeye the Sailor Meets Ali Baba's Forty Thieves",
-          "audioUrl": "https://archive.org/download/Popeye_the_Sailor_Meets_Ali_Babas_Forty_Thieves/Popeye_the_Sailor_Meets_Ali_Babas_Forty_Thieves_512kb.mp4"
+          "id": "track-steamboat",
+          "title": "Steamboat Willie",
+          "description": "The classic 1928 Disney cartoon featuring Mickey Mouse, now in the public domain.",
+          "audioUrl": "https://archive.org/download/SteamboatWillie/SteamboatWillie_512kb.mp4"
         },
         {
-          "id": "track6",
-          "title": "Felix the Cat - Woos Whoopee",
-          "audioUrl": "https://archive.org/download/Felix_Woos_Whoopee/Felix_Woos_Whoopee.mp4"
-        },
-        {
-          "id": "track7",
-          "title": "Felix the Cat - Felix Dines and Pines",
-          "audioUrl": "https://archive.org/download/Felix_Dines_and_Pines/Felix_Dines_and_Pines.mp4"
-        },
-        {
-          "id": "track8",
-          "title": "Betty Boop - A Language All My Own",
-          "audioUrl": "https://archive.org/download/bb_language_all_my_own/bb_language_all_my_own_512kb.mp4"
-        },
-        {
-          "id": "track9",
-          "title": "Betty Boop's Rise to Fame",
-          "audioUrl": "https://archive.org/download/Betty_Boops_Rise_to_Fame/Betty_Boops_Rise_to_Fame_512kb.mp4"
-        },
-        {
-          "id": "track10",
-          "title": "Betty Boop - Poor Cinderella",
-          "audioUrl": "https://archive.org/download/bb_poor_cinderella/bb_poor_cinderella_512kb.mp4"
-        },
-        {
-          "id": "track11",
-          "title": "Colonel Heeza Liar's African Hunt",
-          "audioUrl": "https://archive.org/download/HeezaLiarsAfricanHunt/HeezaLiarsAfricanHunt.mp4"
-        },
-        {
-          "id": "track12",
-          "title": "Gertie the Dinosaur",
-          "audioUrl": "https://archive.org/download/Gertie_the_Dinosaur/Gertie_the_Dinosaur.mp4"
-        },
-        {
-          "id": "track13",
-          "title": "Koko's Earth Control",
-          "audioUrl": "https://archive.org/download/KokosEarthControl/KokosEarthControl.mp4"
-        },
-        {
-          "id": "track14",
-          "title": "Krazy Kat - Bugolist",
-          "audioUrl": "https://archive.org/download/KrazyKatBugolist/KrazyKatBugolist.mp4"
-        },
-        {
-          "id": "track15",
-          "title": "The Fresh Vegetable Mystery",
-          "audioUrl": "https://archive.org/download/FreshVegetableMystery/FreshVegetableMystery.mp4"
-        },
-        {
-          "id": "track16",
-          "title": "The Sunshine Makers",
-          "audioUrl": "https://archive.org/download/SunshineMakers/SunshineMakers.mp4"
-        },
-        {
-          "id": "track17",
-          "title": "The Talking Magpies",
-          "audioUrl": "https://archive.org/download/TalkingMagpies/TalkingMagpies.mp4"
-        },
-        {
-          "id": "track18",
-          "title": "The Wabbit Who Came to Supper",
-          "audioUrl": "https://archive.org/download/WabbitWhoCameToSupper/WabbitWhoCameToSupper.mp4"
-        },
-        {
-          "id": "track19",
-          "title": "Toonerville Trolley - Trolley Ahoy",
-          "audioUrl": "https://archive.org/download/TrolleyAhoy/TrolleyAhoy.mp4"
-        },
-        {
-          "id": "track20",
-          "title": "Bosko the Doughboy",
-          "audioUrl": "https://archive.org/download/BoskoTheDoughboy/BoskoTheDoughboy.mp4"
-        },
-        {
-          "id": "track21",
-          "title": "Prest-O Change-O",
-          "audioUrl": "https://archive.org/download/PrestOChangeO/PrestOChangeO.mp4"
+          "id": "track-skeleton",
+          "title": "Skeleton Frolics",
+          "description": "A 1937 animated cartoon by Ub Iwerks featuring dancing skeletons.",
+          "audioUrl": "https://archive.org/download/pdcartooncollection/Skeleton%20Frolics%201937%20Ub%20Iwerks%5B1%5D.mp4"
         }
       ]
     }

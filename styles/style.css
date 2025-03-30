@@ -545,6 +545,31 @@ h1 {
     background-color: var(--border-color);
 }
 
+/* Reload button styles */
+#reload-feeds-button {
+    border-radius: 50%;
+    background-color: var(--border-color);
+    color: var(--text-primary);
+    width: 30px;
+    height: 30px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px;
+}
+
+#reload-feeds-button:hover {
+    background-color: var(--border-light);
+    transform: rotate(180deg);
+}
+
+#reload-feeds-button svg {
+    fill: currentColor;
+}
+
 #feed-suggestion {
     font-size: 0.85em;
     text-align: center;

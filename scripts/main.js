@@ -154,6 +154,57 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
+    // Function to reload feeds
+    async function reloadFeeds() {
+        console.log("Reloading feeds...");
+        showNotification("Reloading feeds...");
+        
+        // Save current state before reload
+        const wasPlaying = !audioPlayer.paused;
+        const currentTime = audioPlayer.currentTime;
+        const savedTrackId = currentTrackId;
+        const savedFeedId = currentFeedId;
+        
+        // Reload all feeds
+        await initializeFeeds();
+        
+        // If we were previously playing a track, try to restore it
+        if (savedTrackId && savedFeedId) {
+            // Make sure the saved feed is still selected
+            if (currentFeedId !== savedFeedId) {
+                switchFeed(savedFeedId);
+            }
+            
+            // Find the track and play it at the previous position
+            const trackElement = trackList.querySelector(`li[data-track-id="${savedTrackId}"]`);
+            if (trackElement) {
+                trackElement.click();
+                audioPlayer.currentTime = currentTime;
+                
+                if (wasPlaying) {
+                    audioPlayer.play()
+                        .then(() => console.log("Playback resumed after reload"))
+                        .catch(err => console.error("Error resuming playback:", err));
+                }
+            }
+        }
+        
+        showNotification("Feeds reloaded successfully!");
+    }
+    
+    // Show notification message
+    function showNotification(message, duration = 3000) {
+        if (!notificationArea) return;
+        
+        notificationArea.textContent = message;
+        notificationArea.style.display = 'block';
+        
+        // Hide notification after duration
+        setTimeout(() => {
+            notificationArea.style.display = 'none';
+        }, duration);
+    }
+
     // --- Initialization ---
     initializeFeeds();
 
@@ -1207,4 +1258,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 3000);
     }
+
+    // --- Event Handlers ---
+    
+    // Add event listener for reload button
+    const reloadFeedsButton = document.getElementById('reload-feeds-button');
+    if (reloadFeedsButton) {
+        reloadFeedsButton.addEventListener('click', function() {
+            reloadFeeds();
+        });
+    }
+    
+    // Add Feed form submission
+    addFeedForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        await handleAddFeed();
+    });
 }); 
