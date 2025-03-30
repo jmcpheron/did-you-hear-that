@@ -20,6 +20,12 @@
           "title": "Skeleton Frolics",
           "description": "A 1937 animated cartoon by Ub Iwerks featuring dancing skeletons.",
           "audioUrl": "https://archive.org/download/pdcartooncollection/Skeleton%20Frolics%201937%20Ub%20Iwerks%5B1%5D.mp4"
+        },
+        {
+          "id": "track-david-goliath",
+          "title": "David and Goliath",
+          "description": "A public domain cartoon about the biblical story of David and Goliath. It's a Mellow Tune cartoon.",
+          "audioUrl": "https://ia800903.us.archive.org/11/items/DavidAndGoliath/DavidAndGoliath_512kb.mp4"
         }
       ]
     },
