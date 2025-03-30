@@ -1672,72 +1672,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle keyboard navigation and shortcuts
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            if (!helpDialog.classList.contains('hidden')) {
-                helpDialog.classList.add('hidden');
-            } else if (!settingsSection.classList.contains('hidden')) {
-                toggleSettingsButton.setAttribute('aria-expanded', 'false');
-                settingsSection.classList.add('hidden');
-                toggleFeedOptionsList(false);
-            }
-        }
-        
-        const isInputFocused = document.activeElement.tagName === 'INPUT' || 
-                               document.activeElement.tagName === 'TEXTAREA' || 
-                               document.activeElement.isContentEditable;
-        
-        if (!isInputFocused) {
-            switch (event.key) {
-                case ' ':
-                case 'k':
-                    event.preventDefault();
-                    togglePlayPause();
-                    break;
-                case 'ArrowLeft':
-                case 'j':
-                    if (event.ctrlKey || event.metaKey) {
-                        event.preventDefault();
-                        playPreviousTrack();
+    // --- Clear Cache Button Functionality ---
+    const clearCacheButton = document.getElementById('clear-cache-button');
+    if (clearCacheButton) {
+        clearCacheButton.addEventListener('click', () => {
+            const confirmClear = confirm('⚠️ WARNING: This will delete ALL saved playback positions and timestamps. This action cannot be undone. Continue?');
+            
+            if (confirmClear) {
+                // Get all localStorage keys
+                const keys = Object.keys(localStorage);
+                let deletedCount = 0;
+                
+                // Find and delete all playback position keys
+                keys.forEach(key => {
+                    // Delete position keys (audio_pos_*)
+                    if (key.startsWith('audio_pos_')) {
+                        localStorage.removeItem(key);
+                        deletedCount++;
                     }
-                    break;
-                case 'ArrowRight':
-                case 'l':
-                    if (event.ctrlKey || event.metaKey) {
-                        event.preventDefault();
-                        playNextTrack();
+                    
+                    // Delete last played track IDs
+                    if (key.startsWith('last_played_track_id_')) {
+                        localStorage.removeItem(key);
+                        deletedCount++;
                     }
-                    break;
+                });
+                
+                // Show notification
+                showNotification(`Deleted ${deletedCount} saved playback position entries`, 'success');
+                
+                // Reset UI for current track if playing
+                if (currentTrackId) {
+                    // Update track progress display to 0
+                    updateProgressDisplay(currentTrackId, 0, currentTrackDuration);
+                }
             }
-        }
-    });
-
-    // Function to show feed notifications (updated)
-    function showFeedNotification(message, type = 'info') {
-        notificationArea.innerHTML = '';
-
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        notificationArea.appendChild(notification);
-        
-        setTimeout(() => {
-            if (notificationArea.contains(notification)) {
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                     if (notificationArea.contains(notification)) {
-                         notificationArea.removeChild(notification); 
-                     } 
-                 }, 300); 
-            }
-        }, 3000);
+        });
     }
 
-    // --- Event Handlers ---
-    
-    // Add event listener for reload button
+    // --- Handle Reload Feeds button click ---
     const reloadFeedsButton = document.getElementById('reload-feeds-button');
     if (reloadFeedsButton) {
         reloadFeedsButton.addEventListener('click', function() {
