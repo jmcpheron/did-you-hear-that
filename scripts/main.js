@@ -135,11 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsSection = document.getElementById('settings-section');
     const toggleSettingsButton = document.getElementById('toggle-settings-button');
     const notificationArea = document.getElementById('notification-area');
-
-    // Quick Playlist Selector
-    const quickPlaylistSelector = document.getElementById('quick-playlist-selector');
-    const quickPlaylistButton = document.getElementById('quick-playlist-button');
-    const quickPlaylistDropdown = document.getElementById('quick-playlist-dropdown');
     
     // Playlist Switcher elements
     const playlistSwitcher = document.getElementById('playlist-switcher');
@@ -1389,80 +1384,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    speedControlsContainer.addEventListener('click', (event) => {
-        if (event.target.classList.contains('speed-button')) {
-            const newSpeed = parseFloat(event.target.dataset.speed);
+    // --- Event listeners for speed button clicks
+    speedButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const newSpeed = parseFloat(this.dataset.speed);
             audioPlayer.playbackRate = newSpeed;
             if (isCurrentTrackVideo) {
-                 videoArtDisplay.playbackRate = newSpeed;
+                videoArtDisplay.playbackRate = newSpeed;
             }
-            localStorage.setItem('last_playback_speed', newSpeed);
             updateSpeedButtonActiveState(newSpeed);
-        }
-    });
-
-    // --- Quick Playlist Selector Handling ---
-    function populateQuickPlaylistDropdown() {
-        quickPlaylistDropdown.innerHTML = '';
-        
-        allFeeds.forEach(feed => {
-            const li = document.createElement('li');
-            li.dataset.feedId = feed.id;
-            li.textContent = feed.title;
-            
-            if (feed.id === currentFeedId) {
-                li.classList.add('active');
-            }
-            
-            li.addEventListener('click', () => {
-                handleQuickPlaylistSelection(feed.id, feed.title);
-            });
-            
-            quickPlaylistDropdown.appendChild(li);
         });
-    }
-    
-    function handleQuickPlaylistSelection(feedId, feedTitle) {
-        // Update dropdown visibility and selection state
-        toggleQuickPlaylistDropdown(false);
-        
-        // Only switch feed if it's different from current
-        if (feedId !== currentFeedId) {
-            switchFeed(feedId);
-            localStorage.setItem('last_played_feed_id', feedId);
-            
-            // Update other feed selectors to maintain UI consistency
-            const feedOptionsListItems = feedOptionsList.querySelectorAll('li');
-            feedOptionsListItems.forEach(item => {
-                const isSelected = item.dataset.feedId === feedId;
-                item.classList.toggle('selected', isSelected);
-                item.setAttribute('aria-expanded', String(isSelected));
-            });
-            
-            if (currentFeedName) {
-                currentFeedName.textContent = feedTitle;
-            }
-        }
-    }
-    
-    function toggleQuickPlaylistDropdown(show) {
-        const expanded = typeof show === 'boolean' ? show : quickPlaylistButton.getAttribute('aria-expanded') === 'false';
-        quickPlaylistButton.setAttribute('aria-expanded', expanded);
-        quickPlaylistDropdown.classList.toggle('hidden', !expanded);
-    }
-    
-    // Initialize quick playlist dropdown when button is clicked
-    quickPlaylistButton.addEventListener('click', (event) => {
-        populateQuickPlaylistDropdown();
-        toggleQuickPlaylistDropdown();
-        event.stopPropagation();
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!event.target.closest('#quick-playlist-selector')) {
-            toggleQuickPlaylistDropdown(false);
-        }
     });
 
     // --- Event Listeners ---
@@ -1805,6 +1736,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Playlist toggle functionality
     if (togglePlaylistsButton && playlistButtonsContainer) {
+        // Set initial state (expanded by default)
+        togglePlaylistsButton.setAttribute('aria-expanded', 'true');
+        playlistButtonsContainer.classList.remove('collapsed');
+        
         togglePlaylistsButton.addEventListener('click', function() {
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             
@@ -1812,7 +1747,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.setAttribute('aria-expanded', !isExpanded);
             
             // Toggle the collapsed class on the container
-            playlistButtonsContainer.classList.toggle('collapsed', !isExpanded);
+            playlistButtonsContainer.classList.toggle('collapsed', isExpanded);
         });
     }
 }); 
