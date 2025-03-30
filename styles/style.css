@@ -126,6 +126,7 @@ h1 {
     align-items: center;
     width: 100%;
     margin: 10px 0;
+    gap: 20px; /* Space between buttons */
 }
 
 #play-pause-button {
@@ -813,147 +814,223 @@ footer a:hover {
     stroke: var(--text-primary);
 }
 
-/* Collapsible Section */
-.collapsible-section {
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    overflow: hidden;
-    max-height: 600px; /* Set a reasonable max-height that will contain all content */
-}
-
-.collapsible-section.hidden {
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-top: 0;
-    margin-bottom: 5px;
-    opacity: 0;
-    transform: translateY(-10px);
-    pointer-events: none;
-}
-
-.collapsible-section h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: var(--text-primary);
-    text-align: center;
-    font-size: 1.3em;
-}
-
-/* Feed Management Content */
-#feed-management-section {
+/* Hamburger Button */
+.hamburger-button {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    justify-content: space-around;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
 }
 
-/* Help Dialog */
-#help-dialog {
+.hamburger-button span {
+    width: 24px;
+    height: 3px;
+    background: var(--text-primary);
+    border-radius: 10px;
+    transition: all 0.3s linear;
+    position: relative;
+    transform-origin: 1px;
+}
+
+/* Side Panel */
+.side-panel {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Start off-screen */
+    width: 85%; /* Take up most of the screen on mobile */
+    max-width: 350px; /* But cap the width on larger screens */
+    height: 100vh;
+    background-color: var(--bg-card);
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+}
+
+.side-panel.open {
+    left: 0; /* Slide in */
+}
+
+.side-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.side-panel-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.side-panel-content {
+    padding: 20px;
+}
+
+/* Overlay */
+.overlay {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-#help-dialog.hidden {
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Close Button */
+.close-button {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Fix header to use flexbox */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 0;
+}
+
+/* Feed Management Components */
+#feed-selector-container {
+    margin-bottom: 25px;
+}
+
+#add-feed-container {
+    margin-bottom: 25px;
+}
+
+#add-feed-container form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#add-feed-container input[type="url"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-controls);
+    color: var(--text-primary);
+}
+
+#feed-suggestion {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+/* Modal (for Help Dialog) */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100; /* Above side panel */
+}
+
+.modal.hidden {
     display: none;
 }
 
-.help-dialog-content {
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
+.modal-content {
+    width: 90%;
     max-width: 500px;
     max-height: 80vh;
     overflow-y: auto;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    padding: 25px;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.help-dialog-content h3 {
+.modal-content h2 {
     margin-top: 0;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-    font-size: 1.2em;
 }
 
-.help-dialog-content p {
-    color: var(--text-secondary);
-    margin-bottom: 15px;
-    line-height: 1.5;
-}
-
-.help-dialog-content pre {
-    background-color: var(--bg-dark);
-    border-radius: var(--border-radius-sm);
-    padding: 12px;
-    overflow-x: auto;
-    color: var(--text-secondary);
-    font-size: 0.9em;
-    line-height: 1.4;
-    margin-bottom: 15px;
-}
-
-.help-dialog-content ul {
-    color: var(--text-secondary);
-    padding-left: 20px;
-    margin-bottom: 15px;
-}
-
-.help-dialog-content li {
-    margin-bottom: 8px;
-}
-
-.help-dialog-content code {
-    background-color: var(--bg-dark);
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-family: monospace;
-    font-size: 0.9em;
-}
-
-#close-help-dialog {
+.modal-content .close-button {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 15px;
+    right: 15px;
+}
+
+/* Custom Feeds List */
+#custom-feeds-list {
+    list-style: none;
+    padding: 0;
+}
+
+#custom-feeds-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#custom-feeds-list li:last-child {
+    border-bottom: none;
+}
+
+#custom-feeds-list .feed-url {
+    font-size: 0.8em;
+    color: var(--text-tertiary);
+    margin-top: 5px;
+    word-break: break-all;
+}
+
+#custom-feeds-list .delete-feed {
     background: none;
     border: none;
-    color: var(--text-secondary);
-    font-size: 1.5em;
+    color: var(--text-tertiary);
     cursor: pointer;
     padding: 5px;
-    line-height: 1;
+    font-size: 1.2em;
+    transition: color 0.2s ease;
 }
 
-#close-help-dialog:hover {
-    color: var(--text-primary);
+#custom-feeds-list .delete-feed:hover {
+    color: var(--text-error);
 }
 
-/* Remove unnecessary modal styles
-.modal-overlay {
-    position: fixed;
-    ...
+/* Update the feed options list styles to fit in a side panel */
+#feed-options-list {
+    border-radius: var(--border-radius-sm);
+    max-height: 200px;
 }
 
-.modal-content {
-    ...
+@media (min-width: 768px) {
+    .side-panel {
+        left: -400px; /* A bit wider for desktop */
+    }
 }
-
-.close-modal-button {
-    ...
-}
-*/
 
 .track-count {
     font-size: 0.85em;
@@ -963,4 +1040,192 @@ footer a:hover {
     background-color: var(--bg-controls);
     padding: 2px 6px;
     border-radius: 10px;
+}
+
+.skip-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.skip-button:hover {
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+.skip-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.skip-button svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Custom Feed Selector */
+#feed-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between; /* Push help button to the right */
+    position: relative; /* Needed for positioning the options list */
+}
+
+#feed-selector-custom {
+    position: relative; /* Needed for absolute positioning of list */
+    flex-grow: 1;
+}
+
+#current-feed-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 9px 14px;
+    background-color: var(--bg-controls);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: inherit;
+    font-size: 0.95em;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+#current-feed-button:hover {
+    border-color: var(--accent-color);
+    background-color: var(--bg-card-hover);
+}
+
+#current-feed-button[aria-expanded="true"] {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: var(--accent-color);
+}
+
+#current-feed-name {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+}
+
+.dropdown-arrow {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+
+#current-feed-button[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+#feed-options-list {
+    position: absolute;
+    top: 100%; /* Position below the button */
+    left: 0;
+    right: 0;
+    background-color: var(--bg-controls);
+    border: 1px solid var(--accent-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 180px; /* Limit height and make scrollable */
+    overflow-y: auto;
+    z-index: 10; /* Ensure it's above other elements */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#feed-options-list.hidden {
+    opacity: 0;
+    transform: translateY(-5px);
+    pointer-events: none;
+    max-height: 0;
+    border-width: 0;
+}
+
+#feed-options-list li {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#feed-options-list li:hover {
+    background-color: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+#feed-options-list li.selected {
+    background-color: rgba(var(--accent-rgb), 0.15);
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+/* Adjustments for Add Feed Area */
+#add-feed-container input[type="url"] {
+    font-size: 0.9em; /* Slightly smaller */
+}
+
+#add-feed-button {
+    font-size: 0.9em; /* Slightly smaller */
+}
+
+#feed-suggestion {
+    margin-top: 5px; /* Reduced margin */
+}
+
+/* Ensure custom feeds management spacing is okay */
+#custom-feeds-container {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+/* Ensure help button alignment is correct */
+.help-link {
+    flex-shrink: 0; /* Prevent help button from shrinking */
+}
+
+/* Notifications */
+.notification {
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-radius: var(--border-radius-sm);
+    color: white;
+    font-size: 0.9em;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.notification.info {
+    background-color: var(--accent-color);
+}
+
+.notification.success {
+    background-color: #4caf50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+.notification.warning {
+    background-color: #ff9800;
 } 

@@ -3,144 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Audio Player</title>
+    <title>did you hear that? | audio player</title>
     <link rel="stylesheet" href="styles/style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div id="audio-player-container">
-        <div class="main-header">
-            <h1>did you hear that...</h1>
-            <button id="toggle-feed-section" title="Manage Feeds" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                <span class="toggle-icon">▼</span>
-            </button>
-        </div>
+        <div class="content-area">
+            <!-- Header - Replace section toggle with hamburger button -->
+            <header>
+                <h1>did you hear that?</h1>
+                <button id="menu-toggle" class="hamburger-button" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </header>
 
-        <!-- Collapsible Feed Management Section (Hidden by default) -->
-        <div id="feed-management-section" class="collapsible-section hidden">
-            <h2>Manage Feeds</h2> 
-            <div id="feed-selector-container">
-                <label for="feed-select">Current Feed:</label>
-                <select id="feed-select"></select>
-                <button class="help-link" id="help-button" title="Learn how to create a custom feed">?</button>
-            </div>
-            <div id="add-feed-container">
-                <input type="url" id="feed-url" placeholder="Enter JSON feed URL to add">
-                <button id="add-feed-button">Add Feed</button>
-            </div>
-            <div id="feed-notification"></div>
-            <div id="feed-suggestion">
-                Try a <a href="#" id="sample-feed-link">sample feed</a> to get started
-            </div>
-            
-            <!-- Custom Feeds Management UI -->
-            <div id="custom-feeds-container">
-                <div class="custom-feeds-header">
-                    <h3>Your Custom Feeds</h3>
-                    <button id="toggle-custom-feeds-btn" aria-expanded="false">
-                        <span>Manage</span>
-                        <span class="toggle-icon">▼</span>
-                    </button>
+            <!-- Side Panel for Feed Management -->
+            <div id="side-panel" class="side-panel">
+                <div class="side-panel-header">
+                    <h2>Manage Feeds</h2>
+                    <button id="close-panel" class="close-button" aria-label="Close Panel">&times;</button>
                 </div>
-                <ul id="custom-feeds-list" class="hidden"></ul>
+                <div class="side-panel-content">
+                    <!-- Feed Selector -->
+                    <div id="feed-selector-container">
+                        <div id="feed-selector-custom">
+                            <button id="current-feed-button" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="current-feed-name">Loading feeds...</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </button>
+                            <ul id="feed-options-list" class="hidden" role="listbox"></ul>
+                        </div>
+                        <button class="help-link" id="help-button" title="Learn how to create a custom feed">?</button>
+                    </div>
+
+                    <!-- Add Feed UI -->
+                    <div id="add-feed-container">
+                        <h3>Add Feed</h3>
+                        <form id="add-feed-form">
+                            <input type="url" id="feed-url" placeholder="Enter feed URL" required>
+                            <button type="submit" id="add-feed-button">Add</button>
+                        </form>
+                        <p id="feed-suggestion">Try our <a href="#" id="sample-feed-link">sample feed</a>!</p>
+                    </div>
+
+                    <!-- Custom Feeds List -->
+                    <div id="custom-feeds-container">
+                        <h3>Custom Feeds</h3>
+                        <ul id="custom-feeds-list"></ul>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Help Dialog (still a modal, but now outside the feed management section) -->
-        <div id="help-dialog" class="hidden">
-            <div class="help-dialog-content">
-                <h3>Creating Custom Feeds</h3>
-                <button id="close-help-dialog">×</button>
-                <p>A custom feed must be a JSON file with the following structure:</p>
-                <pre>{
-  "feeds": [
-    {
-      "id": "unique-feed-id",
-      "title": "My Custom Feed",
-      "tracks": [
-        {
-          "id": "track-1",
-          "title": "Track Title",
-          "audioUrl": "https://example.com/audio.mp3",
-          "description": "About this track",
-          "albumArt": "https://example.com/cover.jpg"
-        }
-      ]
-    }
-  ]
-}</pre>
-                <p>Key requirements:</p>
-                <ul>
-                    <li>Each feed needs an <code>id</code>, <code>title</code>, and <code>tracks</code> array</li>
-                    <li>Each track needs an <code>id</code>, <code>title</code>, and <code>audioUrl</code></li>
-                    <li>Tracks can include optional <code>description</code> and <code>albumArt</code></li>
-                    <li>Audio URLs can be relative or absolute URLs</li>
-                </ul>
-                <p>Try clicking the "sample feed" link to see a working example!</p>
+            <!-- Overlay for dimming main content when side panel is open -->
+            <div id="overlay" class="overlay"></div>
+
+            <!-- Album Art -->
+            <div id="album-art">
+                <img id="custom-album-art" src="" style="display: none;" alt="Album artwork">
+                <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
             </div>
-        </div>
 
-        <!-- Album Art Area -->
-        <div id="album-art">
-            <svg id="default-album-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
-            </svg>
-            <img id="custom-album-art" src="" style="display: none;">
-        </div>
-
-        <!-- Player Controls -->
-        <div id="player-controls">
-            <audio id="audio-player"></audio>
-            <div class="custom-controls">
-                <div class="time-and-seek">
-                    <span id="current-time" class="time-display">0:00</span>
-                    <input type="range" id="seek-bar" value="0" min="0" max="100" step="1">
-                    <span id="duration" class="time-display">0:00</span>
+            <!-- Player Controls -->
+            <div id="player-controls">
+                <div class="time-control">
+                    <span id="current-time">0:00</span>
+                    <input type="range" id="seek-bar" value="0" max="0">
+                    <span id="duration">--:--</span>
                 </div>
                 <div class="main-control">
+                    <button id="prev-button" class="skip-button" aria-label="Previous track">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                            <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+                        </svg>
+                    </button>
                     <button id="play-pause-button">▶</button>
+                    <button id="next-button" class="skip-button" aria-label="Next track">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                        </svg>
+                    </button>
                 </div>
                 <div class="speed-controls">
                     <button class="speed-button" data-speed="0.5">0.5x</button>
-                    <button class="speed-button active" data-speed="1">1x</button>
+                    <button class="speed-button active" data-speed="1.0">1x</button>
                     <button class="speed-button" data-speed="1.5">1.5x</button>
-                    <button class="speed-button" data-speed="2">2x</button>
+                    <button class="speed-button" data-speed="2.0">2x</button>
+                </div>
+            </div>
+
+            <!-- Current Track Info -->
+            <div id="current-track-info">
+                <div id="track-info-art">
+                    <img id="track-info-custom-art" style="display: none;" alt="Current track album art">
+                    <svg id="track-info-default-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                </div>
+                <div id="track-info-text">
+                    <h2>No Track Selected</h2>
+                    <p>Select a track from the list below to start playing.</p>
+                </div>
+            </div>
+
+            <!-- Track List -->
+            <div id="track-list-container">
+                <h2>Playlist <span id="track-count" class="track-count"></span></h2>
+                <ul id="track-list"></ul>
+            </div>
+
+            <!-- Help Dialog (remains as modal) -->
+            <div id="help-dialog" class="modal hidden">
+                <div class="modal-content">
+                    <button id="close-help-dialog" class="close-button">&times;</button>
+                    <h2>Creating a Custom Feed</h2>
+                    <p>You can add any podcast or audio RSS feed by entering its URL in the input field.</p>
+                    <h3>Feed Format Requirements:</h3>
+                    <ul>
+                        <li>Must be a valid RSS/XML feed with enclosure tags for audio files</li>
+                        <li>CORS must be enabled on the server hosting the feed</li>
+                        <li>Recommended: include duration, artwork, and episode descriptions</li>
+                    </ul>
+                    <p>For examples and documentation on the feed format, see our <a href="examples/custom-feed-guide.md" target="_blank">Custom Feed Guide</a>.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Current Track Information -->
-        <div id="current-track-info">
-            <div class="track-info-art-container">
-                <!-- Default placeholder icon -->
-                <svg id="track-info-default-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
-                </svg>
-                <!-- Custom image -->
-                <img id="track-info-custom-art" src="" style="display: none;">
-            </div>
-            <div class="track-info-text">
-                <h2>No Track Selected</h2>
-                <p>Select a track from the list below to start playing.</p>
-            </div>
+        <div class="player-ui-area">
+            <!-- Audio Element -->
+            <audio id="audio-player" preload="metadata"></audio>
+            
+            <!-- Footer -->
+            <footer>
+                <p>welcome to your audio playground</p>
+                <p><a href="https://github.com/jmcpheron/did-you-hear-that" target="_blank">GitHub</a></p>
+            </footer>
         </div>
-
-        <!-- Track List -->
-        <div id="track-list-container">
-            <h2>Playlist <span id="track-count" class="track-count"></span></h2>
-            <ul id="track-list"></ul>
-        </div>
-
-        <footer>
-            <p>
-                Free & Open Source on 
-                <a href="https://github.com/jmcpheron/did-you-hear-that" target="_blank" rel="noopener noreferrer">GitHub</a>. 
-                Contributions, issues, and suggestions welcome!
-            </p>
-        </footer>
     </div>
-
     <script src="scripts/main.js"></script>
 </body>
 </html> 
