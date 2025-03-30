@@ -3,6 +3,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const CUSTOM_FEEDS_LS_KEY = 'custom_feed_urls';
     const DEFAULT_FEED_PATH = 'data/feed.json';
     
+    // Global error handler for media elements
+    window.addEventListener('error', function(e) {
+        // Check if it's a media element error
+        if (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO') {
+            console.error('Media element error:', e);
+            
+            // For video elements, show error message
+            if (e.target.tagName === 'VIDEO' && isCurrentTrackVideo) {
+                const track = currentTracks.find(t => t.id === currentTrackId);
+                if (track) {
+                    handleVideoError({name: 'MediaError', message: 'Media error occurred'}, track.audioUrl);
+                }
+            }
+            
+            // Prevent default browser error handling
+            e.preventDefault();
+        }
+    }, true);  // Use capture phase
+    
+    // Fallback for browsers that don't support specific media formats
+    function setupMediaFallbacks() {
+        const video = document.createElement('video');
+        
+        // Store browser capabilities for reference
+        window.mediaSupport = {
+            mp4: video.canPlayType('video/mp4'),
+            webm: video.canPlayType('video/webm'),
+            ogg: video.canPlayType('video/ogg'),
+            h264: video.canPlayType('video/mp4; codecs="avc1.42E01E"'),
+            vp8: video.canPlayType('video/webm; codecs="vp8"'),
+            vp9: video.canPlayType('video/webm; codecs="vp9"')
+        };
+        
+        console.log('Browser media format support:', window.mediaSupport);
+        
+        // Add polyfills for older browsers if needed
+        if (!Element.prototype.requestFullscreen && Element.prototype.webkitRequestFullscreen) {
+            Element.prototype.requestFullscreen = Element.prototype.webkitRequestFullscreen;
+        }
+    }
+    
+    // Run media fallback setup
+    setupMediaFallbacks();
+    
     // Fallback feed data for when fetch fails
     const FALLBACK_FEED_DATA = {
         "feeds": [
@@ -154,6 +198,151 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
+    // Check if a URL is a video based on extension or content type
+    function isVideoUrl(url) {
+        if (!url) return false;
+        const lowercaseUrl = url.toLowerCase();
+        
+        // Check for common video file extensions
+        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.mpeg', '.mpg', '.m4v'];
+        if (videoExtensions.some(ext => lowercaseUrl.endsWith(ext))) {
+            return true;
+        }
+        
+        // If URL contains query parameters, we need to check more carefully
+        if (lowercaseUrl.includes('?') || lowercaseUrl.includes('#')) {
+            const urlWithoutParams = lowercaseUrl.split(/[?#]/)[0];
+            return videoExtensions.some(ext => urlWithoutParams.endsWith(ext));
+        }
+        
+        return false;
+    }
+    
+    // Check if the browser supports a specific video format
+    function isVideoFormatSupported(format) {
+        const video = document.createElement('video');
+        
+        // Check for basic video support first
+        if (!video.canPlayType) {
+            return false;
+        }
+        
+        // Common MIME types for different formats
+        const mimeTypes = {
+            'mp4': 'video/mp4',
+            'webm': 'video/webm',
+            'ogg': 'video/ogg',
+            'mov': 'video/quicktime',
+            'm4v': 'video/mp4'
+        };
+        
+        const mimeType = mimeTypes[format.toLowerCase()];
+        if (!mimeType) return false;
+        
+        // Check if the browser can play this type (returns "", "maybe" or "probably")
+        return video.canPlayType(mimeType) !== "";
+    }
+    
+    // Extract file format from URL
+    function getVideoFormat(url) {
+        if (!url) return null;
+        
+        // Handle URLs with query parameters
+        let cleanUrl = url.split(/[?#]/)[0];
+        
+        // Get the extension
+        const extension = cleanUrl.split('.').pop().toLowerCase();
+        return extension || null;
+    }
+    
+    // Handle video errors with better reporting
+    function handleVideoError(error, videoUrl) {
+        console.error("Video playback error:", error);
+        
+        let errorMessage = "Video playback error";
+        const format = getVideoFormat(videoUrl);
+        
+        // Check if it's a format support issue
+        if (format && !isVideoFormatSupported(format)) {
+            errorMessage = `Your browser doesn't support ${format.toUpperCase()} video format`;
+        } 
+        // Check for network/CORS issues
+        else if (error && error.name === "MediaError") {
+            switch(error.code) {
+                case 1: // MEDIA_ERR_ABORTED
+                    errorMessage = "Video playback aborted";
+                    break;
+                case 2: // MEDIA_ERR_NETWORK
+                    errorMessage = "Network error while loading video";
+                    break;
+                case 3: // MEDIA_ERR_DECODE
+                    errorMessage = "Video decoding error";
+                    break;
+                case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
+                    errorMessage = "Video format not supported or CORS error";
+                    break;
+            }
+        }
+        
+        showVideoError(errorMessage);
+        return errorMessage;
+    }
+    
+    // Display video error to user
+    function showVideoError(errorMessage) {
+        // Show error notification
+        if (notificationArea) {
+            showNotification(errorMessage, 'error');
+        }
+        
+        // Create and display error overlay on video element
+        const albumArt = document.getElementById('album-art');
+        if (albumArt) {
+            // Remove any existing error overlay
+            const existingOverlay = albumArt.querySelector('.video-error-overlay');
+            if (existingOverlay) {
+                albumArt.removeChild(existingOverlay);
+            }
+            
+            // Create new error overlay
+            const errorOverlay = document.createElement('div');
+            errorOverlay.className = 'video-error-overlay';
+            errorOverlay.innerHTML = `<div class="error-message">${errorMessage}</div>`;
+            albumArt.appendChild(errorOverlay);
+        }
+    }
+    
+    // Clear video error display
+    function clearVideoError() {
+        const albumArt = document.getElementById('album-art');
+        if (albumArt) {
+            const errorOverlay = albumArt.querySelector('.video-error-overlay');
+            if (errorOverlay) {
+                albumArt.removeChild(errorOverlay);
+            }
+        }
+    }
+    
+    // Optimize video display based on aspect ratio
+    function optimizeVideoDisplay(video) {
+        if (!video || video.videoWidth === 0) return;
+        
+        // Get the video's aspect ratio
+        const videoAspect = video.videoWidth / video.videoHeight;
+        const container = document.getElementById('album-art');
+        
+        if (container) {
+            // Apply appropriate object-fit based on aspect ratio
+            if (videoAspect > 1.3) { // Widescreen videos
+                video.style.objectFit = 'contain';
+                container.classList.add('widescreen-video');
+            } else { // More square or vertical videos
+                video.style.objectFit = 'cover';
+                container.classList.remove('widescreen-video');
+            }
+        }
+    }
+
     // Function to reload feeds
     async function reloadFeeds() {
         console.log("Reloading feeds...");
@@ -192,16 +381,36 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification("Feeds reloaded successfully!");
     }
     
-    // Show notification message
-    function showNotification(message, duration = 3000) {
+    // Show notification message with type support
+    function showNotification(message, type = 'info', duration = 3000) {
         if (!notificationArea) return;
         
-        notificationArea.textContent = message;
+        notificationArea.innerHTML = '';
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        notificationArea.appendChild(notification);
+        
+        // Make notification visible
         notificationArea.style.display = 'block';
         
         // Hide notification after duration
         setTimeout(() => {
-            notificationArea.style.display = 'none';
+            if (notificationArea.contains(notification)) {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notificationArea.contains(notification)) {
+                        notificationArea.removeChild(notification);
+                        
+                        // Hide notification area if empty
+                        if (notificationArea.children.length === 0) {
+                            notificationArea.style.display = 'none';
+                        }
+                    }
+                }, 300);
+            }
         }, duration);
     }
 
@@ -856,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isNewTrack = currentTrackId !== trackId;
-        isCurrentTrackVideo = track.audioUrl.toLowerCase().endsWith('.mp4');
+        isCurrentTrackVideo = isVideoUrl(track.audioUrl);
         
         if (isNewTrack) {
             resetPreviousTrackProgress();
@@ -867,12 +1076,50 @@ document.addEventListener('DOMContentLoaded', () => {
             
             updateTrackInfo(track);
             updatePlayingClass(trackId);
+            
+            // Clear any previous video errors
+            clearVideoError();
                        
             // Handle visual display (Video or Static Art)
             if (isCurrentTrackVideo) {
-                console.log("Loading MP4 track:", track.title);
+                console.log("Loading video track:", track.title);
+                
+                // Check if video format is supported by browser
+                const format = getVideoFormat(track.audioUrl);
+                if (format && !isVideoFormatSupported(format)) {
+                    console.warn(`Browser may not support ${format} video format`);
+                    showNotification(`Note: Your browser might have limited support for ${format.toUpperCase()} videos`, "warning");
+                }
+                
                 videoArtDisplay.src = track.audioUrl;
                 videoArtDisplay.style.display = 'block';
+                
+                // Apply video-active class to album art container
+                const albumArt = document.getElementById('album-art');
+                if (albumArt) {
+                    albumArt.classList.add('video-active');
+                }
+                
+                // Show video controls overlay
+                const videoControls = document.getElementById('video-controls-overlay');
+                if (videoControls) {
+                    videoControls.style.display = 'flex';
+                    updateVideoPlayPauseButton(false);
+                }
+                
+                // Set video to unmuted (volume controlled by audio player)
+                videoArtDisplay.muted = false;
+                
+                // Update mute button icon if exists
+                if (videoMuteToggleBtn) {
+                    videoMuteToggleBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                    `;
+                }
+                
+                // Hide static album art
                 customAlbumArt.style.display = 'none';
                 defaultAlbumArt.style.display = 'none';
                 trackInfoCustomArt.style.display = 'none';
@@ -882,6 +1129,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Loading MP3/Audio track:", track.title);
                 videoArtDisplay.style.display = 'none';
                 videoArtDisplay.src = '';
+                
+                // Remove video-active class from album art container
+                const albumArt = document.getElementById('album-art');
+                if (albumArt) {
+                    albumArt.classList.remove('video-active');
+                }
+                
+                // Hide video controls overlay
+                const videoControls = document.getElementById('video-controls-overlay');
+                if (videoControls) {
+                    videoControls.style.display = 'none';
+                }
+                
                 updateAlbumArtDisplay(track.albumArt || null);
                 if (track.albumArt) {
                     trackInfoCustomArt.src = track.albumArt;
@@ -920,16 +1180,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 playPromise.then(_ => {
                     updatePlayPauseButton(true);
                     if (isCurrentTrackVideo) {
-                         videoArtDisplay.play().catch(e => console.error("Video play error:", e)); 
+                        videoArtDisplay.play()
+                            .catch(e => {
+                                handleVideoError(e, track.audioUrl);
+                                // Try to continue audio playback even if video fails
+                                console.log("Continuing with audio-only playback...");
+                            }); 
                     }
                 })
-                             .catch(error => {
-                                 console.error("Audio playback error:", error);
-                                 updatePlayPauseButton(false);
-                                 if (isCurrentTrackVideo) {
-                                     videoArtDisplay.pause();
-                                 }
-                             });
+                .catch(error => {
+                    console.error("Audio playback error:", error);
+                    updatePlayPauseButton(false);
+                    if (isCurrentTrackVideo) {
+                        videoArtDisplay.pause();
+                        handleVideoError(error, track.audioUrl);
+                    }
+                });
             }
         } else if (!shouldPlay && !audioPlayer.paused) {
              audioPlayer.pause(); 
@@ -995,6 +1261,18 @@ document.addEventListener('DOMContentLoaded', () => {
          videoArtDisplay.style.display = 'none';
          videoArtDisplay.src = '';
          isCurrentTrackVideo = false;
+         
+         // Reset video-specific UI elements
+         const albumArt = document.getElementById('album-art');
+         if (albumArt) {
+             albumArt.classList.remove('video-active');
+         }
+         
+         // Hide video controls overlay
+         const videoControls = document.getElementById('video-controls-overlay');
+         if (videoControls) {
+             videoControls.style.display = 'none';
+         }
 
          currentTimeDisplay.textContent = '0:00';
          durationDisplay.textContent = '--:--';
@@ -1150,15 +1428,180 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     videoArtDisplay.addEventListener('timeupdate', () => {
-        // console.log(`Video time: ${videoArtDisplay.currentTime}`); 
+        // Intentionally left blank for performance reasons
     });
     
     videoArtDisplay.addEventListener('loadedmetadata', () => {
-         console.log(`Video metadata loaded. Duration: ${videoArtDisplay.duration}`);
+        console.log(`Video metadata loaded. Duration: ${videoArtDisplay.duration}`);
+        // Optimize video display based on aspect ratio
+        optimizeVideoDisplay(videoArtDisplay);
     });
     
     videoArtDisplay.addEventListener('error', (e) => {
         console.error("Video element error:", e);
+        if (isCurrentTrackVideo && currentTrackId) {
+            const track = currentTracks.find(t => t.id === currentTrackId);
+            if (track) {
+                handleVideoError(e.target.error, track.audioUrl);
+            }
+        }
+    });
+    
+    videoArtDisplay.addEventListener('canplay', () => {
+        if (isCurrentTrackVideo) {
+            console.log("Video can play now");
+            clearVideoError();  // Clear any existing error messages
+        }
+    });
+    
+    // Add support for full-screen toggle on video double-click
+    videoArtDisplay.addEventListener('dblclick', () => {
+        if (isCurrentTrackVideo) {
+            toggleFullscreen();
+        }
+    });
+    
+    // Add keyboard shortcuts for fullscreen
+    document.addEventListener('keydown', (e) => {
+        if (isCurrentTrackVideo && e.key === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            e.preventDefault();
+            toggleFullscreen();
+        }
+    });
+
+    // Video Controls Implementation
+    const videoPlayPauseBtn = document.getElementById('video-play-pause');
+    const videoMuteToggleBtn = document.getElementById('video-mute-toggle');
+    const videoFullscreenBtn = document.getElementById('video-fullscreen');
+    const videoControlsOverlay = document.getElementById('video-controls-overlay');
+    
+    if (videoPlayPauseBtn) {
+        videoPlayPauseBtn.addEventListener('click', () => {
+            if (!isCurrentTrackVideo) return;
+            
+            if (videoArtDisplay.paused) {
+                videoArtDisplay.play()
+                    .then(() => {
+                        updateVideoPlayPauseButton(true);
+                        // Also play audio if it's paused
+                        if (audioPlayer.paused) {
+                            audioPlayer.play().catch(e => console.error("Error playing audio:", e));
+                            updatePlayPauseButton(true);
+                        }
+                    })
+                    .catch(e => handleVideoError(e, videoArtDisplay.src));
+            } else {
+                videoArtDisplay.pause();
+                updateVideoPlayPauseButton(false);
+                // Also pause audio
+                audioPlayer.pause();
+                updatePlayPauseButton(false);
+            }
+        });
+    }
+    
+    if (videoMuteToggleBtn) {
+        videoMuteToggleBtn.addEventListener('click', () => {
+            if (!isCurrentTrackVideo) return;
+            
+            // Toggle mute state for video
+            videoArtDisplay.muted = !videoArtDisplay.muted;
+            
+            // Update mute button icon
+            if (videoArtDisplay.muted) {
+                videoMuteToggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                    </svg>
+                `;
+            } else {
+                videoMuteToggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                `;
+            }
+        });
+    }
+    
+    if (videoFullscreenBtn) {
+        videoFullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+    
+    // Toggle fullscreen for video
+    function toggleFullscreen() {
+        if (!isCurrentTrackVideo) return;
+        
+        if (!document.fullscreenElement) {
+            if (videoArtDisplay.requestFullscreen) {
+                videoArtDisplay.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else if (videoArtDisplay.webkitRequestFullscreen) { // Safari
+                videoArtDisplay.webkitRequestFullscreen();
+            } else if (videoArtDisplay.msRequestFullscreen) { // IE11
+                videoArtDisplay.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { // Safari
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE11
+                document.msExitFullscreen();
+            }
+        }
+    }
+    
+    // Update video play/pause button state
+    function updateVideoPlayPauseButton(isPlaying) {
+        if (!videoPlayPauseBtn) return;
+        
+        if (isPlaying) {
+            videoPlayPauseBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+            `;
+        } else {
+            videoPlayPauseBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            `;
+        }
+    }
+    
+    // Show video controls when hovering over video
+    if (videoControlsOverlay) {
+        let controlsTimeout;
+        
+        function showVideoControls() {
+            if (!isCurrentTrackVideo) return;
+            
+            clearTimeout(controlsTimeout);
+            videoControlsOverlay.classList.add('active');
+            
+            // Hide controls after 3 seconds of inactivity
+            controlsTimeout = setTimeout(() => {
+                videoControlsOverlay.classList.remove('active');
+            }, 3000);
+        }
+        
+        videoArtDisplay.addEventListener('mousemove', showVideoControls);
+        videoArtDisplay.addEventListener('touchstart', showVideoControls);
+        videoControlsOverlay.addEventListener('mousemove', showVideoControls);
+        videoControlsOverlay.addEventListener('touchstart', showVideoControls);
+    }
+    
+    // Handle fullscreen change event
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement && document.fullscreenElement === videoArtDisplay) {
+            // When entering fullscreen, ensure controls are visible briefly
+            if (videoControlsOverlay) {
+                showVideoControls();
+            }
+        }
     });
 
     // State Saving/Loading
