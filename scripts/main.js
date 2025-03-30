@@ -62,23 +62,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const seekBar = document.getElementById('seek-bar');
     const currentTimeDisplay = document.getElementById('current-time');
     const durationDisplay = document.getElementById('duration');
-    const feedSelect = document.getElementById('feed-select');
     const speedControlsContainer = document.querySelector('.speed-controls');
     const speedButtons = document.querySelectorAll('.speed-button');
+    const addFeedForm = document.getElementById('add-feed-form');
     const feedUrl = document.getElementById('feed-url');
     const addFeedButton = document.getElementById('add-feed-button');
     const sampleFeedLink = document.getElementById('sample-feed-link');
     const customFeedsContainer = document.getElementById('custom-feeds-container');
     const customFeedsList = document.getElementById('custom-feeds-list');
-    const toggleCustomFeedsBtn = document.getElementById('toggle-custom-feeds-btn');
     const defaultAlbumArt = document.getElementById('default-album-art');
     const customAlbumArt = document.getElementById('custom-album-art');
-    const feedNotification = document.getElementById('feed-notification');
     const trackInfoDefaultArt = document.getElementById('track-info-default-art');
     const trackInfoCustomArt = document.getElementById('track-info-custom-art');
-    const trackInfoText = document.querySelector('.track-info-text');
-    const toggleFeedSectionButton = document.getElementById('toggle-feed-section');
-    const feedManagementSection = document.getElementById('feed-management-section');
+    const trackInfoText = document.getElementById('track-info-text');
     const helpButton = document.getElementById('help-button');
     const helpDialog = document.getElementById('help-dialog');
     const closeHelpDialogButton = document.getElementById('close-help-dialog');
@@ -88,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentFeedButton = document.getElementById('current-feed-button');
     const currentFeedName = document.getElementById('current-feed-name');
     const feedOptionsList = document.getElementById('feed-options-list');
+    const trackCount = document.getElementById('track-count');
     
     // Side panel elements
     const menuToggle = document.getElementById('menu-toggle');
@@ -291,6 +288,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Add the missing populateTrackList function
+    function populateTrackList(trackData) {
+        trackList.innerHTML = '';
+        
+        if (!trackData || trackData.length === 0) {
+            trackList.innerHTML = '<li>No tracks found in this feed.</li>';
+            if (trackCount) trackCount.textContent = '(0)';
+            return;
+        }
+        
+        if (trackCount) trackCount.textContent = `(${trackData.length})`;
+        
+        trackData.forEach((track, index) => {
+            const li = document.createElement('li');
+            li.dataset.trackId = track.id;
+
+            const titleSpan = document.createElement('span');
+            titleSpan.textContent = track.title;
+
+            const progressSpan = document.createElement('span');
+            progressSpan.className = 'track-progress';
+            const savedTime = parseFloat(localStorage.getItem(getLocalStorageKey('pos', track.id)) || 0);
+            const initialDuration = track.duration ? formatTime(track.duration) : '--:--';
+            const initialCurrentTime = formatTime(savedTime);
+            progressSpan.textContent = ` (${initialCurrentTime} / ${initialDuration})`;
+            progressSpan.dataset.trackId = track.id;
+
+            li.appendChild(titleSpan);
+            li.appendChild(progressSpan);
+
+            li.addEventListener('click', () => {
+                playTrack(track.id, true);
+            });
+            trackList.appendChild(li);
+        });
+    }
+
     // --- Load Last State --- 
     function loadLastState() {
         const lastFeedId = localStorage.getItem('last_played_feed_id') || (allFeeds.length > 0 ? allFeeds[0].id : null);
@@ -402,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedInfo.appendChild(urlElement);
                 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
+                deleteBtn.className = 'delete-feed';
                 deleteBtn.innerHTML = '&times;';
                 deleteBtn.setAttribute('aria-label', 'Delete feed');
                 deleteBtn.dataset.url = url;
@@ -459,24 +493,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCustomFeedsList();
     }
     
-    toggleCustomFeedsBtn.addEventListener('click', () => {
-        const isExpanded = toggleCustomFeedsBtn.getAttribute('aria-expanded') === 'true';
-        toggleCustomFeedsBtn.setAttribute('aria-expanded', !isExpanded);
-        customFeedsList.classList.toggle('hidden');
-    });
-
-    function showFeedNotification(message, type = 'error') {
-        feedNotification.textContent = message;
-        feedNotification.className = type;
-        feedNotification.style.display = 'block';
-
-        setTimeout(() => {
-            feedNotification.style.display = 'none';
-            feedNotification.textContent = '';
-            feedNotification.className = '';
-        }, 5000);
-    }
-
     // --- Add Feed Form Handling ---
     addFeedForm.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -614,18 +630,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
                 showFeedNotification('Switched to sample feed!', 'success');
             }
-        }
-    });
-
-    // --- Collapsible Feed Management Section ---
-    toggleFeedSectionButton.addEventListener('click', () => {
-        const isExpanded = toggleFeedSectionButton.getAttribute('aria-expanded') === 'true';
-        toggleFeedSectionButton.setAttribute('aria-expanded', !isExpanded);
-        
-        if (isExpanded) {
-            feedManagementSection.classList.add('hidden');
-        } else {
-            feedManagementSection.classList.remove('hidden');
         }
     });
 
@@ -971,4 +975,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Function to show feed notifications
+    function showFeedNotification(message, type = 'info') {
+        // Create a notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        // Add it to the side panel content
+        const panelContent = document.querySelector('.side-panel-content');
+        
+        // Check if there's already a notification
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // Insert at the top of the panel content
+        panelContent.insertBefore(notification, panelContent.firstChild);
+        
+        // Remove after a delay
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
 }); 
