@@ -227,11 +227,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateTrackList(trackData) {
         trackList.innerHTML = '';
+        const trackCount = document.getElementById('track-count');
+        
         if (!trackData || trackData.length === 0) {
              trackList.innerHTML = '<li>No tracks found in this feed.</li>';
+             if (trackCount) trackCount.textContent = '(0)';
              return;
         }
-        trackData.forEach((track) => {
+        
+        if (trackCount) trackCount.textContent = `(${trackData.length})`;
+        
+        trackData.forEach((track, index) => {
             const li = document.createElement('li');
             li.dataset.trackId = track.id;
 
