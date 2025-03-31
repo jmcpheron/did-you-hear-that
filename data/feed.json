@@ -72,6 +72,36 @@
           "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"
         }
       ]
+    },
+    {
+      "id": "jmcpheron",
+      "title": "JMcPheron's AI & Media Feed",
+      "tracks": [
+        {
+          "id": "ai-driven-tools",
+          "title": "AI-Driven Tools Changing Education",
+          "audioUrl": "https://jmcpheron.com/audio/ai-driven-tools.mp3",
+          "description": "Exploration of how AI-powered tools are transforming educational experiences and challenging traditional teaching methodologies."
+        },
+        {
+          "id": "future-media-consumption",
+          "title": "The Future of Media Consumption",
+          "audioUrl": "https://jmcpheron.com/audio/future-media-consumption.mp3",
+          "description": "Discussion on evolving media consumption habits and how technology is reshaping our interaction with content."
+        },
+        {
+          "id": "podcast-revolution",
+          "title": "The Podcast Revolution: Audio's Renaissance",
+          "audioUrl": "https://jmcpheron.com/audio/podcast-revolution.mp3",
+          "description": "Examining the resurgence of audio media through podcasting and its impact on information sharing and entertainment."
+        },
+        {
+          "id": "emergent-ai-behaviors",
+          "title": "Emergent Behaviors in AI Systems",
+          "audioUrl": "https://jmcpheron.com/audio/emergent-ai-behaviors.mp3",
+          "description": "Investigating surprising and unplanned behaviors that emerge in complex AI systems as they interact with real-world environments."
+        }
+      ]
     }
   ]
 }
