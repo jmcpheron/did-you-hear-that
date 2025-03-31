@@ -13,8 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.tagName === 'VIDEO' && isCurrentTrackVideo) {
                 const track = currentTracks.find(t => t.id === currentTrackId);
                 if (track) {
-                    handleVideoError({name: 'MediaError', message: 'Media error occurred'}, track.audioUrl);
+                    handleVideoError({name: 'MediaError', message: 'Media error occurred', code: 4}, track.audioUrl);
                 }
+            } else if (e.target.tagName === 'AUDIO' && currentTrackId) {
+                // Handle audio errors by showing a notification
+                showNotification("Error playing audio: The file may be unavailable or access restricted", "error", 5000);
             }
             
             // Prevent default browser error handling
@@ -213,17 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Check for common video file extensions
         const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.mpeg', '.mpg', '.m4v'];
-        if (videoExtensions.some(ext => lowercaseUrl.endsWith(ext))) {
-            return true;
-        }
         
-        // If URL contains query parameters, we need to check more carefully
-        if (lowercaseUrl.includes('?') || lowercaseUrl.includes('#')) {
-            const urlWithoutParams = lowercaseUrl.split(/[?#]/)[0];
-            return videoExtensions.some(ext => urlWithoutParams.endsWith(ext));
-        }
+        // Handle URLs with query parameters or fragments correctly
+        const urlPath = new URL(url, window.location.href).pathname;
+        const urlLower = urlPath.toLowerCase();
         
-        return false;
+        return videoExtensions.some(ext => urlLower.endsWith(ext));
     }
     
     // Check if the browser supports a specific video format
@@ -255,12 +253,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function getVideoFormat(url) {
         if (!url) return null;
         
-        // Handle URLs with query parameters
-        let cleanUrl = url.split(/[?#]/)[0];
+        try {
+            // Use URL object to properly handle various URL formats
+            const urlObj = new URL(url, window.location.href);
+            // Get path without query parameters or fragments
+            const path = urlObj.pathname;
+            // Split by dots and get the last part
+            const parts = path.split('.');
+            if (parts.length > 1) {
+                return parts[parts.length - 1].toLowerCase();
+            }
+        } catch (e) {
+            console.error("Error parsing URL for format detection:", e);
+        }
         
-        // Get the extension
-        const extension = cleanUrl.split('.').pop().toLowerCase();
-        return extension || null;
+        return null;
     }
     
     // Handle video errors with better reporting
@@ -1126,7 +1133,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const enhancedTrack = ensureTrackMetadata(track);
 
         const isNewTrack = currentTrackId !== trackId;
-        isCurrentTrackVideo = isVideoUrl(enhancedTrack.audioUrl);
+        
+        try {
+            // Validate the URL before attempting to play
+            new URL(enhancedTrack.audioUrl);
+            isCurrentTrackVideo = isVideoUrl(enhancedTrack.audioUrl);
+        } catch (e) {
+            console.error("Invalid URL format:", enhancedTrack.audioUrl);
+            showNotification("Error: Invalid media URL format", "error");
+            return;
+        }
         
         if (isNewTrack) {
             resetPreviousTrackProgress();
