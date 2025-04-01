@@ -2,6 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Constants ---
     const CUSTOM_FEEDS_LS_KEY = 'custom_feed_urls';
     const DEFAULT_FEED_PATH = 'data/feed.json';
+    const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+    
+    // Helper to handle CORS issues with certain domains
+    function getCorsProxyUrl(url) {
+        // Only use the proxy if needed
+        if (url.includes('gist.githubusercontent.com') || 
+            url.includes('raw.githubusercontent.com')) {
+            // GitHub raw content often needs CORS proxy
+            return CORS_PROXY + url;
+        }
+        return url;
+    }
     
     // Global error handler for media elements
     window.addEventListener('error', function(e) {
@@ -493,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (customFeedUrls.length > 0) {
             const feedPromises = customFeedUrls.map(url => 
-                fetch(url)
+                fetch(getCorsProxyUrl(url))
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error fetching custom feed! status: ${response.status}, URL: ${url}`);
@@ -920,21 +932,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleAddFeed() {
         const url = feedUrl.value.trim();
         if (!url) {
-            showFeedNotification('Please enter a valid feed URL', 'error');
+            showNotification('Please enter a valid feed URL', 'error');
             return;
         }
 
         // Check if URL already exists
         const currentUrls = getCustomFeedUrls();
         if (currentUrls.includes(url)) {
-            showFeedNotification('This feed URL is already added', 'error');
+            showNotification('This feed URL is already added', 'error');
             return;
         }
 
         try {
             new URL(url);
         } catch (_) {
-            showFeedNotification("Invalid URL format.", 'error');
+            showNotification("Invalid URL format.", 'error');
             return;
         }
 
@@ -946,21 +958,27 @@ document.addEventListener('DOMContentLoaded', () => {
         let addedFeedId = null;
 
         try {
-            const response = await fetch(url);
+            console.log(`Fetching feed from URL: ${url}`);
+            // Use the CORS proxy for GitHub URLs
+            const fetchUrl = getCorsProxyUrl(url);
+            console.log(`Using fetch URL: ${fetchUrl}`);
+            const response = await fetch(fetchUrl);
             if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
             const data = await response.json();
+            console.log("Feed data received:", data);
+            
             if (!data.feeds || !Array.isArray(data.feeds) || data.feeds.length === 0) {
                 throw new Error("Invalid feed structure (missing or empty 'feeds' array)");
             }
             const firstFeed = data.feeds[0];
             if (!firstFeed.id || !firstFeed.title || !firstFeed.tracks) {
-                 throw new Error("Invalid feed structure (feed missing id, title, or tracks)");
+                throw new Error("Invalid feed structure (feed missing id, title, or tracks)");
             }
             if (firstFeed.tracks.length > 0) {
-                 const firstTrack = firstFeed.tracks[0];
-                 if (!firstTrack.id || !firstTrack.title || !firstTrack.audioUrl) {
-                     throw new Error("Invalid feed structure (track missing id, title, or audioUrl)");
-                 }
+                const firstTrack = firstFeed.tracks[0];
+                if (!firstTrack.id || !firstTrack.title || !firstTrack.audioUrl) {
+                    throw new Error("Invalid feed structure (track missing id, title, or audioUrl)");
+                }
             }
             feedData = data;
 
@@ -970,12 +988,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     newFeed.sourceUrl = url;
                     allFeeds.push(newFeed);
-                    
-                    const option = document.createElement('option');
-                    option.value = newFeed.id;
-                    option.textContent = newFeed.title;
-                    feedSelect.appendChild(option);
-                    
                     addedFeedId = newFeed.id;
                     feedAddedCount++;
                     console.log(`Added new feed: ${newFeed.title} (ID: ${newFeed.id})`);
@@ -986,22 +998,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newUrls = [...currentUrls, url];
                 saveCustomFeedUrls(newUrls);
                 feedUrl.value = '';
-                showFeedNotification(`${feedAddedCount} feed(s) added successfully!`, 'success');
+                showNotification(`${feedAddedCount} feed(s) added successfully!`, 'success');
 
                 populateCustomFeedSelector(allFeeds);
+                populatePlaylistSwitcher();
 
                 if (addedFeedId) {
                     handleCustomFeedSelection(addedFeedId, allFeeds.find(f => f.id === addedFeedId)?.title || 'New Feed');
                 }
             } else {
-                showFeedNotification("No new feeds added (all IDs already exist).", 'error');
+                showNotification("No new feeds added (all IDs already exist).", 'error');
             }
         } catch (error) {
             console.error('Error adding feed:', error);
-            showFeedNotification('Failed to add feed. Check the URL and try again.', 'error');
+            showNotification(`Failed to add feed: ${error.message}`, 'error');
         } finally {
             addFeedButton.disabled = false;
-            addFeedButton.textContent = 'Add Feed';
+            addFeedButton.textContent = 'Add';
         }
     }
 
