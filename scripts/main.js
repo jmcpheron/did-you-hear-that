@@ -1801,4 +1801,19 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // --- Handle custom errors in promises ---
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+        
+        // Show user-friendly error message
+        if (event.reason && event.reason.message) {
+            showNotification(`Error: ${event.reason.message}`, 'error');
+        } else {
+            showNotification('An unexpected error occurred', 'error');
+        }
+        
+        // Prevent default handling
+        event.preventDefault();
+    });
 }); 
