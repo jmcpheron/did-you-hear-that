@@ -520,6 +520,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         return { status: 'fulfilled', value: data.feeds, url: url }; 
                     })
                     .catch(error => {
+                        console.error(`Failed to fetch or parse custom feed from ${url}:`, error);
+                        showNotification(`Error loading feed from ${url}: ${error.message}`, 'error');
                         return { status: 'rejected', reason: error, url: url };
                     })
             );
