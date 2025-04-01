@@ -928,15 +928,112 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Add Feed Form Handling ---
     addFeedForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        handleAddFeed();
+        showFeedPreviewModal();
     });
 
-    async function handleAddFeed() {
+    // Feed Preview Modal Components
+    const feedPreviewContainer = document.createElement('div');
+    feedPreviewContainer.id = 'feed-preview-modal';
+    feedPreviewContainer.className = 'modal hidden';
+    feedPreviewContainer.innerHTML = `
+        <div class="modal-content feed-preview-content">
+            <button class="close-button">&times;</button>
+            <h2>Feed Preview</h2>
+            <div id="feed-preview-status">
+                <div class="loader"></div>
+                <p>Loading feed preview...</p>
+            </div>
+            <div id="feed-preview-details" class="hidden">
+                <div class="feed-preview-header">
+                    <h3 id="preview-feed-title">Feed Title</h3>
+                    <span id="preview-track-count">0 tracks</span>
+                </div>
+                <div class="feed-tracks-preview">
+                    <ul id="preview-tracks-list"></ul>
+                </div>
+                <div class="feed-preview-actions">
+                    <button id="add-previewed-feed" class="action-button">Add to Library</button>
+                    <button id="cancel-feed-preview" class="secondary-button">Cancel</button>
+                </div>
+            </div>
+            <div id="feed-preview-error" class="hidden">
+                <p class="error-message">Error loading feed.</p>
+                <div class="error-details">
+                    <p id="error-details-message"></p>
+                    <pre id="feed-format-example"></pre>
+                </div>
+                <button id="try-different-feed" class="secondary-button">Try a different URL</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(feedPreviewContainer);
+
+    // Get elements from the preview modal
+    const closePreviewButton = feedPreviewContainer.querySelector('.close-button');
+    const previewStatus = document.getElementById('feed-preview-status');
+    const previewDetails = document.getElementById('feed-preview-details');
+    const previewError = document.getElementById('feed-preview-error');
+    const previewFeedTitle = document.getElementById('preview-feed-title');
+    const previewTrackCount = document.getElementById('preview-track-count');
+    const previewTracksList = document.getElementById('preview-tracks-list');
+    const addPreviewedFeedButton = document.getElementById('add-previewed-feed');
+    const cancelPreviewButton = document.getElementById('cancel-feed-preview');
+    const tryDifferentFeedButton = document.getElementById('try-different-feed');
+    const errorDetailsMessage = document.getElementById('error-details-message');
+    const feedFormatExample = document.getElementById('feed-format-example');
+
+    // Set up example format for errors
+    feedFormatExample.textContent = JSON.stringify({
+        "feeds": [
+            {
+                "id": "example-feed",
+                "title": "Example Feed",
+                "tracks": [
+                    {
+                        "id": "track1",
+                        "title": "Example Track 1",
+                        "audioUrl": "https://example.com/audio1.mp3",
+                        "description": "This is an example track."
+                    }
+                ]
+            }
+        ]
+    }, null, 2);
+
+    // Preview modal event listeners
+    closePreviewButton.addEventListener('click', () => {
+        feedPreviewContainer.classList.add('hidden');
+    });
+
+    cancelPreviewButton.addEventListener('click', () => {
+        feedPreviewContainer.classList.add('hidden');
+    });
+
+    tryDifferentFeedButton.addEventListener('click', () => {
+        feedPreviewContainer.classList.add('hidden');
+    });
+
+    // Handle clicking outside modal to close
+    feedPreviewContainer.addEventListener('click', (event) => {
+        if (event.target === feedPreviewContainer) {
+            feedPreviewContainer.classList.add('hidden');
+        }
+    });
+
+    // Store preview feed data
+    let previewedFeedData = null;
+    let previewedFeedUrl = '';
+
+    // Function to show feed preview modal
+    async function showFeedPreviewModal() {
         const url = feedUrl.value.trim();
         if (!url) {
             showNotification('Please enter a valid feed URL', 'error');
             return;
         }
+
+        // Store the URL being previewed
+        previewedFeedUrl = url;
 
         // Check if URL already exists
         const currentUrls = getCustomFeedUrls();
@@ -952,43 +1049,131 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        addFeedButton.disabled = true;
-        addFeedButton.textContent = 'Checking...';
-        let feedData = null;
-        let errorDetail = '';
-        let feedAddedCount = 0;
-        let addedFeedId = null;
+        // Reset the modal state
+        previewStatus.classList.remove('hidden');
+        previewDetails.classList.add('hidden');
+        previewError.classList.add('hidden');
+        previewTracksList.innerHTML = '';
+        previewedFeedData = null;
 
+        // Show the modal
+        feedPreviewContainer.classList.remove('hidden');
+
+        // Fetch and display preview
         try {
-            console.log(`Fetching feed from URL: ${url}`);
             // Use the CORS proxy for GitHub URLs
             const fetchUrl = getCorsProxyUrl(url);
-            console.log(`Using fetch URL: ${fetchUrl}`);
+            console.log(`Fetching feed preview from: ${fetchUrl}`);
+            
             const response = await fetch(fetchUrl);
             if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
+            
             const data = await response.json();
-            console.log("Feed data received:", data);
+            console.log("Feed preview data received:", data);
             
             if (!data.feeds || !Array.isArray(data.feeds) || data.feeds.length === 0) {
                 throw new Error("Invalid feed structure (missing or empty 'feeds' array)");
             }
-            const firstFeed = data.feeds[0];
-            if (!firstFeed.id || !firstFeed.title || !firstFeed.tracks) {
-                throw new Error("Invalid feed structure (feed missing id, title, or tracks)");
-            }
-            if (firstFeed.tracks.length > 0) {
-                const firstTrack = firstFeed.tracks[0];
-                if (!firstTrack.id || !firstTrack.title || !firstTrack.audioUrl) {
-                    throw new Error("Invalid feed structure (track missing id, title, or audioUrl)");
-                }
-            }
-            feedData = data;
-
-            feedData.feeds.forEach(newFeed => {
-                if (allFeeds.some(existingFeed => existingFeed.id === newFeed.id)) {
-                    console.warn(`Skipping feed with duplicate ID '${newFeed.id}' from URL ${url}`);
+            
+            // Validate feed structure
+            let feedCount = 0;
+            let trackCount = 0;
+            let validationErrors = [];
+            
+            data.feeds.forEach((feed, feedIndex) => {
+                if (!feed.id) validationErrors.push(`Feed #${feedIndex + 1} is missing an ID`);
+                if (!feed.title) validationErrors.push(`Feed #${feedIndex + 1} is missing a title`);
+                if (!feed.tracks || !Array.isArray(feed.tracks)) {
+                    validationErrors.push(`Feed #${feedIndex + 1} is missing a tracks array`);
                 } else {
-                    newFeed.sourceUrl = url;
+                    feed.tracks.forEach((track, trackIndex) => {
+                        if (!track.id) validationErrors.push(`Track #${trackIndex + 1} in feed "${feed.title}" is missing an ID`);
+                        if (!track.title) validationErrors.push(`Track #${trackIndex + 1} in feed "${feed.title}" is missing a title`);
+                        if (!track.audioUrl) validationErrors.push(`Track #${trackIndex + 1} in feed "${feed.title}" is missing an audioUrl`);
+                        trackCount++;
+                    });
+                }
+                feedCount++;
+            });
+            
+            if (validationErrors.length > 0) {
+                throw new Error(`Feed validation errors:\n${validationErrors.join('\n')}`);
+            }
+            
+            // Store the validated feed data
+            previewedFeedData = data;
+            
+            // Display feed info in the preview
+            const firstFeed = data.feeds[0];
+            previewFeedTitle.textContent = firstFeed.title;
+            previewTrackCount.textContent = `${firstFeed.tracks.length} tracks`;
+            
+            // Display a sample of tracks
+            const maxPreviewTracks = 5;
+            const tracksToDisplay = firstFeed.tracks.slice(0, maxPreviewTracks);
+            
+            previewTracksList.innerHTML = '';
+            tracksToDisplay.forEach(track => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="preview-track-title">${track.title}</div>
+                    <div class="preview-track-details">${track.description || ''}</div>
+                `;
+                previewTracksList.appendChild(li);
+            });
+            
+            // If there are more tracks than shown
+            if (firstFeed.tracks.length > maxPreviewTracks) {
+                const li = document.createElement('li');
+                li.className = 'more-tracks';
+                li.textContent = `+ ${firstFeed.tracks.length - maxPreviewTracks} more tracks`;
+                previewTracksList.appendChild(li);
+            }
+            
+            // If multiple feeds exist, add note
+            if (data.feeds.length > 1) {
+                const note = document.createElement('p');
+                note.className = 'multiple-feeds-note';
+                note.textContent = `Note: This source contains ${data.feeds.length} feeds with a total of ${trackCount} tracks. All will be imported.`;
+                previewTracksList.appendChild(note);
+            }
+            
+            // Show the preview
+            previewStatus.classList.add('hidden');
+            previewDetails.classList.remove('hidden');
+            
+        } catch (error) {
+            console.error('Error loading feed preview:', error);
+            
+            // Show error state
+            previewStatus.classList.add('hidden');
+            previewError.classList.remove('hidden');
+            errorDetailsMessage.textContent = error.message || 'Unknown error occured while loading feed.';
+        }
+    }
+
+    // Handle adding the previewed feed
+    addPreviewedFeedButton.addEventListener('click', async () => {
+        if (!previewedFeedData || !previewedFeedUrl) {
+            showNotification('No valid feed data to add', 'error');
+            feedPreviewContainer.classList.add('hidden');
+            return;
+        }
+        
+        addFeedButton.disabled = true;
+        addPreviewedFeedButton.disabled = true;
+        addPreviewedFeedButton.textContent = 'Adding...';
+        
+        try {
+            let feedAddedCount = 0;
+            let addedFeedId = null;
+            const currentUrls = getCustomFeedUrls();
+
+            previewedFeedData.feeds.forEach(newFeed => {
+                if (allFeeds.some(existingFeed => existingFeed.id === newFeed.id)) {
+                    console.warn(`Skipping feed with duplicate ID '${newFeed.id}' from URL ${previewedFeedUrl}`);
+                } else {
+                    newFeed.sourceUrl = previewedFeedUrl;
                     allFeeds.push(newFeed);
                     addedFeedId = newFeed.id;
                     feedAddedCount++;
@@ -997,17 +1182,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (feedAddedCount > 0) {
-                const newUrls = [...currentUrls, url];
+                const newUrls = [...currentUrls, previewedFeedUrl];
                 saveCustomFeedUrls(newUrls);
                 feedUrl.value = '';
                 showNotification(`${feedAddedCount} feed(s) added successfully!`, 'success');
 
                 populateCustomFeedSelector(allFeeds);
                 populatePlaylistSwitcher();
+                updateCustomFeedsList();
 
                 if (addedFeedId) {
                     handleCustomFeedSelection(addedFeedId, allFeeds.find(f => f.id === addedFeedId)?.title || 'New Feed');
                 }
+                
+                // Close the modal
+                feedPreviewContainer.classList.add('hidden');
             } else {
                 showNotification("No new feeds added (all IDs already exist).", 'error');
             }
@@ -1016,119 +1205,432 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification(`Failed to add feed: ${error.message}`, 'error');
         } finally {
             addFeedButton.disabled = false;
-            addFeedButton.textContent = 'Add';
+            addPreviewedFeedButton.disabled = false;
+            addPreviewedFeedButton.textContent = 'Add to Library';
         }
-    }
+    });
 
-    sampleFeedLink.addEventListener('click', () => {
-        const existingSampleFeed = allFeeds.find(feed => feed.id === 'sample-custom');
+    function updateCustomFeedsList() {
+        const customUrls = getCustomFeedUrls();
         
-        if (existingSampleFeed) {
-            handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
-            showNotification('Switched to sample feed!', 'success');
-        } else {
-            const newFeeds = SAMPLE_FEED_DATA.feeds;
+        if (customUrls.length > 0) {
+            customFeedsContainer.style.display = 'block';
             
-            let addedCount = 0;
+            customFeedsList.innerHTML = '';
             
-            newFeeds.forEach(newFeed => {
-                if (allFeeds.some(existingFeed => existingFeed.id === newFeed.id)) {
-                    console.warn(`Sample feed with ID '${newFeed.id}' already exists.`);
-                } else {
-                    newFeed.sourceUrl = 'embedded-sample-feed';
-                    allFeeds.push(newFeed);
-                    addedCount++;
+            const feedsByUrl = {};
+            
+            allFeeds.forEach(feed => {
+                if (feed.sourceUrl && customUrls.includes(feed.sourceUrl)) {
+                    if (!feedsByUrl[feed.sourceUrl]) {
+                        feedsByUrl[feed.sourceUrl] = [];
+                    }
+                    feedsByUrl[feed.sourceUrl].push(feed);
                 }
             });
             
-            if (addedCount > 0) {
-                const currentUrls = getCustomFeedUrls();
-                if (!currentUrls.includes('embedded-sample-feed')) {
-                    const newUrls = [...currentUrls, 'embedded-sample-feed'];
-                    saveCustomFeedUrls(newUrls);
+            customUrls.forEach(url => {
+                const li = document.createElement('li');
+                li.className = 'custom-feed-item';
+                const feedsFromThisUrl = feedsByUrl[url] || [];
+                
+                // Container for the feed item
+                const feedItemContent = document.createElement('div');
+                feedItemContent.className = 'feed-item-content';
+                
+                // Feed header with title and actions
+                const feedHeader = document.createElement('div');
+                feedHeader.className = 'feed-header';
+                
+                // Feed info (title, URL)
+                const feedInfo = document.createElement('div');
+                feedInfo.className = 'feed-info';
+                
+                const titleElement = document.createElement('div');
+                titleElement.className = 'feed-title';
+                
+                if (feedsFromThisUrl.length > 0) {
+                    titleElement.textContent = feedsFromThisUrl
+                        .map(feed => feed.title)
+                        .join(', ');
+                } else {
+                    titleElement.textContent = 'Custom Feed';
                 }
                 
-                populateCustomFeedSelector(allFeeds);
+                const urlElement = document.createElement('div');
+                urlElement.className = 'feed-url';
+                urlElement.textContent = url;
                 
-                handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
-                showNotification('Sample feed added successfully!', 'success');
-            } else {
-                handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
-                showNotification('Switched to sample feed!', 'success');
-            }
-        }
-    });
-
-    // --- Help Dialog ---
-    helpButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        helpDialog.classList.remove('hidden');
-    });
-
-    closeHelpDialogButton.addEventListener('click', () => {
-        helpDialog.classList.add('hidden');
-    });
-
-    // Close dialog by clicking outside content
-    helpDialog.addEventListener('click', (event) => {
-        if (event.target === helpDialog) {
-            helpDialog.classList.add('hidden');
-        }
-    });
-
-    // --- Consolidated Album Art Update Function (for static images only) ---
-    function updateAlbumArtDisplay(imageUrl) {
-        console.log('Updating STATIC album art with URL:', imageUrl);
-        
-        const hasValidImageUrl = !!imageUrl && typeof imageUrl === 'string';
-        
-        // Main Album Art
-        if (customAlbumArt && defaultAlbumArt) {
-            if (hasValidImageUrl) {
-                // Set up error handling in case the image can't be loaded
-                const img = new Image();
-                img.onload = function() {
-                    customAlbumArt.src = imageUrl;
-                    customAlbumArt.style.display = 'block';
-                    defaultAlbumArt.style.display = 'none';
-                };
-                img.onerror = function() {
-                    console.warn('Error loading album art image:', imageUrl);
-                    customAlbumArt.src = '';
-                    customAlbumArt.style.display = 'none';
-                    defaultAlbumArt.style.display = 'block';
-                };
-                img.src = imageUrl;
-            } else {
-                customAlbumArt.src = '';
-                customAlbumArt.style.display = 'none';
-                defaultAlbumArt.style.display = 'block';
-            }
-        }
-
-        // Track Info Album Art
-        if (trackInfoCustomArt && trackInfoDefaultArt) {
-            if (hasValidImageUrl) {
-                // Also setup error handling for track info art
-                const img = new Image();
-                img.onload = function() {
-                    trackInfoCustomArt.src = imageUrl;
-                    trackInfoCustomArt.style.display = 'block';
-                    trackInfoDefaultArt.style.display = 'none';
-                };
-                img.onerror = function() {
-                    trackInfoCustomArt.src = '';
-                    trackInfoCustomArt.style.display = 'none';
-                    trackInfoDefaultArt.style.display = 'block';
-                };
-                img.src = imageUrl;
-            } else {
-                trackInfoCustomArt.src = '';
-                trackInfoCustomArt.style.display = 'none';
-                trackInfoDefaultArt.style.display = 'block';
-            }
+                // Feed actions container
+                const feedActions = document.createElement('div');
+                feedActions.className = 'feed-actions';
+                
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-feed';
+                deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+                deleteBtn.setAttribute('aria-label', 'Delete feed');
+                deleteBtn.setAttribute('title', 'Delete feed');
+                deleteBtn.dataset.url = url;
+                deleteBtn.addEventListener('click', handleDeleteFeed);
+                
+                // Refresh button
+                const refreshBtn = document.createElement('button');
+                refreshBtn.className = 'refresh-feed';
+                refreshBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>';
+                refreshBtn.setAttribute('aria-label', 'Refresh feed');
+                refreshBtn.setAttribute('title', 'Refresh feed');
+                refreshBtn.dataset.url = url;
+                refreshBtn.addEventListener('click', handleRefreshFeed);
+                
+                // Assemble the feed item elements
+                feedInfo.appendChild(titleElement);
+                feedInfo.appendChild(urlElement);
+                
+                feedActions.appendChild(refreshBtn);
+                feedActions.appendChild(deleteBtn);
+                
+                feedHeader.appendChild(feedInfo);
+                feedHeader.appendChild(feedActions);
+                
+                // Feed details with track list
+                const feedDetails = document.createElement('div');
+                feedDetails.className = 'feed-details';
+                
+                if (feedsFromThisUrl.length > 0) {
+                    let totalTracks = 0;
+                    
+                    feedsFromThisUrl.forEach(feed => {
+                        if (feed.tracks && Array.isArray(feed.tracks)) {
+                            totalTracks += feed.tracks.length;
+                        }
+                    });
+                    
+                    const statsElement = document.createElement('div');
+                    statsElement.className = 'feed-stats';
+                    statsElement.textContent = `${feedsFromThisUrl.length} feed(s), ${totalTracks} track(s)`;
+                    
+                    feedDetails.appendChild(statsElement);
+                }
+                
+                // Assemble the complete feed item
+                feedItemContent.appendChild(feedHeader);
+                feedItemContent.appendChild(feedDetails);
+                
+                li.appendChild(feedItemContent);
+                customFeedsList.appendChild(li);
+            });
+        } else {
+            customFeedsContainer.style.display = 'none';
+            customFeedsList.innerHTML = '<li class="empty-message">No custom feeds added yet.</li>';
         }
     }
+    
+    async function handleRefreshFeed(event) {
+        const url = event.currentTarget.dataset.url;
+        if (!url) return;
+        
+        const refreshBtn = event.currentTarget;
+        refreshBtn.disabled = true;
+        
+        const originalHTML = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = '<div class="small-loader"></div>';
+        
+        try {
+            // Find existing feeds with this URL
+            const existingFeeds = allFeeds.filter(feed => feed.sourceUrl === url);
+            const existingFeedIds = existingFeeds.map(feed => feed.id);
+            
+            // Fetch updated feed
+            const response = await fetch(getCorsProxyUrl(url));
+            if (!response.ok) {
+                throw new Error(`Failed to fetch feed: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            if (!data.feeds || !Array.isArray(data.feeds)) {
+                throw new Error('Invalid feed structure');
+            }
+            
+            // Remove old feeds with this source URL
+            allFeeds = allFeeds.filter(feed => feed.sourceUrl !== url);
+            
+            // Add updated feeds
+            let updatedCount = 0;
+            data.feeds.forEach(feed => {
+                feed.sourceUrl = url;
+                allFeeds.push(feed);
+                updatedCount++;
+            });
+            
+            // Update UI
+            populateCustomFeedSelector(allFeeds);
+            populatePlaylistSwitcher();
+            updateCustomFeedsList();
+            
+            // If current feed was updated, reload it
+            if (existingFeedIds.includes(currentFeedId)) {
+                const newFeedVersion = allFeeds.find(feed => feed.id === currentFeedId);
+                if (newFeedVersion) {
+                    switchFeed(currentFeedId);
+                } else if (allFeeds.length > 0) {
+                    switchFeed(allFeeds[0].id);
+                }
+            }
+            
+            showNotification(`Feed refreshed successfully! Updated ${updatedCount} feed(s).`, 'success');
+            
+        } catch (error) {
+            console.error('Error refreshing feed:', error);
+            showNotification(`Failed to refresh feed: ${error.message}`, 'error');
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = originalHTML;
+        }
+    }
+    
+    // Generate CSS styles for the new feed management UI
+    const newStyles = document.createElement('style');
+    newStyles.textContent = `
+        .feed-preview-content {
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        #feed-preview-status {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        .small-loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feed-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        #preview-track-count {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .feed-tracks-preview {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        #preview-tracks-list li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        #preview-tracks-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .preview-track-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .preview-track-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        li.more-tracks {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .multiple-feeds-note {
+            margin-top: 15px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .feed-preview-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        #feed-preview-error {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        #feed-preview-error .error-message {
+            color: #e53935;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .error-details {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        #error-details-message {
+            white-space: pre-line;
+            margin-bottom: 15px;
+        }
+        
+        #feed-format-example {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+        
+        /* Custom Feed List Styling */
+        .custom-feed-item {
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .feed-item-content {
+            padding: 0;
+        }
+        
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f8f8;
+        }
+        
+        .feed-info {
+            flex: 1;
+        }
+        
+        .feed-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .feed-url {
+            font-size: 0.8em;
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .feed-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .feed-actions button {
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feed-actions button:hover {
+            background: #e9e9e9;
+        }
+        
+        .feed-actions button svg {
+            fill: #555;
+        }
+        
+        .delete-feed:hover svg {
+            fill: #e53935;
+        }
+        
+        .refresh-feed:hover svg {
+            fill: #2196F3;
+        }
+        
+        .feed-details {
+            padding: 10px;
+            border-top: 1px solid #eee;
+            background: white;
+        }
+        
+        .feed-stats {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .action-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .action-button:hover {
+            background-color: #1976D2;
+        }
+        
+        .action-button:disabled {
+            background-color: #B0BEC5;
+            cursor: not-allowed;
+        }
+        
+        .secondary-button {
+            background-color: #E0E0E0;
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .secondary-button:hover {
+            background-color: #BDBDBD;
+        }
+    `;
+    document.head.appendChild(newStyles);
 
     // --- Playback Logic ---
     function playTrack(trackId, shouldPlay = true) {
@@ -1818,4 +2320,115 @@ document.addEventListener('DOMContentLoaded', () => {
         // Prevent default handling
         event.preventDefault();
     });
+
+    // Sample feed link handler - restore functionality
+    sampleFeedLink.addEventListener('click', () => {
+        const existingSampleFeed = allFeeds.find(feed => feed.id === 'sample-custom');
+        
+        if (existingSampleFeed) {
+            handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
+            showNotification('Switched to sample feed!', 'success');
+        } else {
+            const newFeeds = SAMPLE_FEED_DATA.feeds;
+            
+            let addedCount = 0;
+            
+            newFeeds.forEach(newFeed => {
+                if (allFeeds.some(existingFeed => existingFeed.id === newFeed.id)) {
+                    console.warn(`Sample feed with ID '${newFeed.id}' already exists.`);
+                } else {
+                    newFeed.sourceUrl = 'embedded-sample-feed';
+                    allFeeds.push(newFeed);
+                    addedCount++;
+                }
+            });
+            
+            if (addedCount > 0) {
+                const currentUrls = getCustomFeedUrls();
+                if (!currentUrls.includes('embedded-sample-feed')) {
+                    const newUrls = [...currentUrls, 'embedded-sample-feed'];
+                    saveCustomFeedUrls(newUrls);
+                }
+                
+                populateCustomFeedSelector(allFeeds);
+                
+                handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
+                showNotification('Sample feed added successfully!', 'success');
+            } else {
+                handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
+                showNotification('Switched to sample feed!', 'success');
+            }
+        }
+    });
+    
+    // --- Help Dialog ---
+    helpButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        helpDialog.classList.remove('hidden');
+    });
+
+    closeHelpDialogButton.addEventListener('click', () => {
+        helpDialog.classList.add('hidden');
+    });
+
+    // Close dialog by clicking outside content
+    helpDialog.addEventListener('click', (event) => {
+        if (event.target === helpDialog) {
+            helpDialog.classList.add('hidden');
+        }
+    });
+
+    // --- Consolidated Album Art Update Function (for static images only) ---
+    function updateAlbumArtDisplay(imageUrl) {
+        console.log('Updating STATIC album art with URL:', imageUrl);
+        
+        const hasValidImageUrl = !!imageUrl && typeof imageUrl === 'string';
+        
+        // Main Album Art
+        if (customAlbumArt && defaultAlbumArt) {
+            if (hasValidImageUrl) {
+                // Set up error handling in case the image can't be loaded
+                const img = new Image();
+                img.onload = function() {
+                    customAlbumArt.src = imageUrl;
+                    customAlbumArt.style.display = 'block';
+                    defaultAlbumArt.style.display = 'none';
+                };
+                img.onerror = function() {
+                    console.warn('Error loading album art image:', imageUrl);
+                    customAlbumArt.src = '';
+                    customAlbumArt.style.display = 'none';
+                    defaultAlbumArt.style.display = 'block';
+                };
+                img.src = imageUrl;
+            } else {
+                customAlbumArt.src = '';
+                customAlbumArt.style.display = 'none';
+                defaultAlbumArt.style.display = 'block';
+            }
+        }
+
+        // Track Info Album Art
+        if (trackInfoCustomArt && trackInfoDefaultArt) {
+            if (hasValidImageUrl) {
+                // Also setup error handling for track info art
+                const img = new Image();
+                img.onload = function() {
+                    trackInfoCustomArt.src = imageUrl;
+                    trackInfoCustomArt.style.display = 'block';
+                    trackInfoDefaultArt.style.display = 'none';
+                };
+                img.onerror = function() {
+                    trackInfoCustomArt.src = '';
+                    trackInfoCustomArt.style.display = 'none';
+                    trackInfoDefaultArt.style.display = 'block';
+                };
+                img.src = imageUrl;
+            } else {
+                trackInfoCustomArt.src = '';
+                trackInfoCustomArt.style.display = 'none';
+                trackInfoDefaultArt.style.display = 'block';
+            }
+        }
+    }
 }); 
