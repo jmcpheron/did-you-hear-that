@@ -2212,6 +2212,12 @@ document.addEventListener('DOMContentLoaded', () => {
         await handleAddFeed();
     });
 
+    // Function to handle adding feeds directly
+    async function handleAddFeed() {
+        // Simply call the showFeedPreviewModal function
+        await showFeedPreviewModal();
+    }
+
     // --- Playlist Switcher UI ---
     function populatePlaylistSwitcher() {
         if (!playlistButtons) return;
