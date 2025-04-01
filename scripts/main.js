@@ -905,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         populateCustomFeedSelector(allFeeds);
         
-        showFeedNotification('Custom feed deleted successfully.', 'success');
+        showNotification('Custom feed deleted successfully.', 'success');
         
         if (isCurrentFeedRemoved && allFeeds.length > 0) {
             const firstFeed = allFeeds[0];
@@ -1023,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (existingSampleFeed) {
             handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
-            showFeedNotification('Switched to sample feed!', 'success');
+            showNotification('Switched to sample feed!', 'success');
         } else {
             const newFeeds = SAMPLE_FEED_DATA.feeds;
             
@@ -1035,12 +1035,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     newFeed.sourceUrl = 'embedded-sample-feed';
                     allFeeds.push(newFeed);
-                    
-                    const option = document.createElement('option');
-                    option.value = newFeed.id;
-                    option.textContent = newFeed.title;
-                    feedSelect.appendChild(option);
-                    
                     addedCount++;
                 }
             });
@@ -1055,10 +1049,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 populateCustomFeedSelector(allFeeds);
                 
                 handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
-                showFeedNotification('Sample feed added successfully!', 'success');
+                showNotification('Sample feed added successfully!', 'success');
             } else {
                 handleCustomFeedSelection('sample-custom', 'Sample Custom Feed');
-                showFeedNotification('Switched to sample feed!', 'success');
+                showNotification('Switched to sample feed!', 'success');
             }
         }
     });
