@@ -83,9 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         "id": "sample-track-1",
                         "title": "Getting Started with Custom Feeds",
                         "description": "This is an example of how to create your own feed for this player.",
-                        "audioUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3",
-                        "albumArt": "https://picsum.photos/200/200?random=1"
-                    },
+                        "audioUrl": "https://pdst.fm/e/pscrb.fm/rss/p/cdn.twit.tv/libsyn/sn_1011/c18d5d13-9b48-44ea-9b24-b368f6c8d6c7/R1_sn1011.mp3",
+                        "albumArt": "https://elroy.twit.tv/sites/default/files/styles/twit_album_art_2048x2048/public/images/shows/security_now/album_art/audio/sn2022_albumart_standard_2400.jpg"
+                                  },
                     {
                         "id": "sample-track-2",
                         "title": "Another Example Track",
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seekBar = document.getElementById('seek-bar');
     const currentTimeDisplay = document.getElementById('current-time');
     const durationDisplay = document.getElementById('duration');
-    const speedControlsContainer = document.querySelector('.speed-controls');
+    const speedControlsContainer = document.querySelector('.speed-controls-container');
     const speedButtons = document.querySelectorAll('.speed-button');
     const addFeedForm = document.getElementById('add-feed-form');
     const feedUrl = document.getElementById('feed-url');
@@ -717,10 +717,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         if (successfullyLoadedFeed) {
-            const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
-            audioPlayer.playbackRate = savedSpeed;
-            videoArtDisplay.playbackRate = savedSpeed;
-            updateSpeedButtonActiveState(savedSpeed);
+            const lastSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
+            audioPlayer.playbackRate = lastSpeed;
+            videoArtDisplay.playbackRate = lastSpeed;
+            updateSpeedButtonActiveState(lastSpeed);
     
             const lastTrackId = localStorage.getItem(getLocalStorageKey('track_id')); 
             const trackToLoad = lastTrackId ? currentTracks.find(t => t.id === lastTrackId) : null;
