@@ -717,10 +717,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         if (successfullyLoadedFeed) {
-            const lastSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
-            audioPlayer.playbackRate = lastSpeed;
-            videoArtDisplay.playbackRate = lastSpeed;
-            updateSpeedButtonActiveState(lastSpeed);
+            const savedSpeed = parseFloat(localStorage.getItem('last_playback_speed') || 1.0);
+            audioPlayer.playbackRate = savedSpeed;
+            videoArtDisplay.playbackRate = savedSpeed;
+            updateSpeedButtonActiveState(savedSpeed);
     
             const lastTrackId = localStorage.getItem(getLocalStorageKey('track_id')); 
             const trackToLoad = lastTrackId ? currentTracks.find(t => t.id === lastTrackId) : null;
