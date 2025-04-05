@@ -42,16 +42,16 @@
         },
         {
           "id": "99-cent-sif-book",
-          "title": "Cold Logic, Warm Blood",
+          "title": "Etsy 2 edge",
           "description": "In this episode, we take a deeper look into the subject matter.",
-          "audioUrl": "sample_audio/cold-logic-warm-blood.mp3",
+          "audioUrl": "sample_audio/micro-specs.mp3",
           "albumArt":"sample_audio/clwb.png"
         },
         {
           "id": "Ai Thoughts",
-          "title": "HN Post",
+          "title": "Bearing",
           "description": "HN post audio.",
-          "audioUrl": "sample_audio/cal-calls.mp3"
+          "audioUrl": "sample_audio/bearing.mp3"
         }
       ]
     },
