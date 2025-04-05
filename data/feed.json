@@ -48,10 +48,10 @@
           "albumArt":"sample_audio/clwb.png"
         },
         {
-          "id": "episode3",
-          "title": "Episode 3: Guest Interview",
-          "description": "Featuring a special guest discussing their experiences.",
-          "audioUrl": "sample_audio/openai-fm-sage-connoisseur.mp3"
+          "id": "Ai Thoughts",
+          "title": "HN Post",
+          "description": "HN post audio.",
+          "audioUrl": "sample_audio/cal-calls.mp3"
         }
       ]
     },
