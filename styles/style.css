@@ -16,6 +16,11 @@
     --border-light: #3a3a3a;
     --shadow-color: rgba(0, 0, 0, 0.4);
     
+    /* Slider colors */
+    --slider-track-color: #2e2e2e;
+    --slider-fill-color: var(--accent-color);
+    --slider-thumb-color: var(--accent-color);
+    
     /* Sizing and spacing */
     --container-padding: 20px;
     --border-radius-sm: 6px;
@@ -122,10 +127,11 @@ h1 {
 
 /* Player Controls Section */
 #player-controls {
-    padding: 20px;
-    background-color: var(--bg-controls);
+    padding: 22px;
+    background: radial-gradient(120% 120% at 10% 0%, #2a2a2a 0%, var(--bg-controls) 60%);
     border-radius: var(--border-radius-lg);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.03);
+    border: 1px solid var(--border-light);
 }
 
 .time-control {
@@ -142,46 +148,71 @@ h1 {
 }
 
 #seek-bar {
+    --seek-before-percent: 0%;
     flex-grow: 1;
-    margin: 0 10px;
-    height: 10px;
+    margin: 0 12px;
+    height: 12px;
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
-    background: var(--slider-track-color);
-    border-radius: 4px;
+    background: linear-gradient(
+        to right,
+        var(--slider-fill-color) 0 var(--seek-before-percent),
+        var(--slider-track-color) var(--seek-before-percent) 100%
+    );
+    border-radius: 999px;
     outline: none;
+    transition: box-shadow 0.2s ease, background 0.2s ease;
+}
+
+/* WebKit track */
+#seek-bar::-webkit-slider-runnable-track {
+    height: 12px;
+    border-radius: 999px;
+    background: transparent;
 }
 
 #seek-bar::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 18px;
-    height: 18px;
-    background: var(--accent-color);
+    width: 16px;
+    height: 16px;
+    background: var(--slider-thumb-color);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 5px rgba(var(--accent-rgb), 0.5);
-    transition: background 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 4px rgba(29,185,84,0.12);
+    transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.2s ease;
 }
 
 #seek-bar::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: var(--accent-color);
+    width: 16px;
+    height: 16px;
+    background: var(--slider-thumb-color);
     border-radius: 50%;
     cursor: pointer;
     border: none;
-    box-shadow: 0 0 5px rgba(var(--accent-rgb), 0.5);
-    transition: background 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 4px rgba(29,185,84,0.12);
+    transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.2s ease;
 }
 
-#seek-bar:hover::-webkit-slider-thumb {
-    background: #4cae4f; /* Slightly darker on hover */
+#seek-bar:hover::-webkit-slider-thumb,
+#seek-bar:hover::-moz-range-thumb { background: var(--accent-darker); }
+
+/* Firefox track/progress */
+#seek-bar::-moz-range-track {
+    height: 12px;
+    border-radius: 999px;
+    background: var(--slider-track-color);
 }
-#seek-bar:hover::-moz-range-thumb {
-    background: #4cae4f;
+#seek-bar::-moz-range-progress {
+    height: 12px;
+    border-radius: 999px;
+    background: var(--slider-fill-color);
 }
+
+#seek-bar:focus { box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.15); }
+#seek-bar:active::-webkit-slider-thumb,
+#seek-bar:active::-moz-range-thumb { transform: scale(0.95); }
 
 .main-control {
     display: flex;
@@ -191,16 +222,18 @@ h1 {
 }
 
 .control-button {
-    background: none;
-    border: none;
+    background: linear-gradient(180deg, #2a2a2a, #222);
+    border: 1px solid var(--border-light);
     color: var(--text-primary);
     cursor: pointer;
     padding: 10px;
     margin: 0 10px; /* Spacing between buttons */
-    transition: color 0.2s ease, transform 0.1s ease;
+    transition: color 0.2s ease, transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
 
 .control-button:hover {
@@ -217,18 +250,22 @@ h1 {
 }
 
 .play-button {
-    background-color: var(--accent-color);
+    background: linear-gradient(180deg, #27c15c, #18a34a);
     color: #fff;
     border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    box-shadow: 0 2px 5px rgba(var(--accent-rgb), 0.4);
-    margin: 0 20px; /* More space around play/pause */
+    width: 68px;
+    height: 68px;
+    box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.35), inset 0 -2px 0 rgba(0,0,0,0.2);
+    margin: 0 22px; /* More space around play/pause */
 }
 
-.play-button:hover {
-    background-color: #4cae4f; /* Darker accent */
-    color: #fff;
+.play-button:hover { filter: brightness(1.05); color: #fff; }
+
+.play-button.playing { animation: pulse-glow 1.8s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.35), 0 0 0 0 rgba(var(--accent-rgb), 0.25); }
+    50% { box-shadow: 0 10px 26px rgba(var(--accent-rgb), 0.5), 0 0 0 10px rgba(var(--accent-rgb), 0.0); }
 }
 
 .play-button svg {
@@ -1029,10 +1066,9 @@ footer a:hover {
 }
 
 .skip-button {
-    background: none;
-    border: none;
     color: var(--text-secondary);
-    cursor: pointer;
+    width: 48px;
+    height: 48px;
     padding: 8px;
     transition: all 0.2s ease;
     display: flex;
