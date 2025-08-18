@@ -1268,9 +1268,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isPlaying) {
             playPauseButton.textContent = '⏸️';
             playPauseButton.setAttribute('aria-label', 'Pause');
+            playPauseButton.classList.add('playing');
         } else {
             playPauseButton.textContent = '▶️';
             playPauseButton.setAttribute('aria-label', 'Play');
+            playPauseButton.classList.remove('playing');
         }
     }
 
@@ -1475,7 +1477,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     seekBar.addEventListener('input', () => {
         isSeeking = true;
-        currentTimeDisplay.textContent = formatTime(seekBar.value);
+        const currentVal = parseFloat(seekBar.value || 0);
+        const maxVal = parseFloat(seekBar.max || 0) || 1;
+        const pct = Math.max(0, Math.min(100, (currentVal / maxVal) * 100));
+        seekBar.style.setProperty('--seek-before-percent', `${pct}%`);
+        currentTimeDisplay.textContent = formatTime(currentVal);
     });
     seekBar.addEventListener('change', () => {
         if (!currentTrackId) return;
@@ -1509,6 +1515,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const track = currentTracks.find(t => t.id === currentTrackId);
             if (track) {
                 handleVideoError(e.target.error, track.audioUrl);
+            }
+        }
+    });
+
+    // --- Keyboard Shortcuts ---
+    document.addEventListener('keydown', (e) => {
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        // Ignore typing in inputs/textareas
+        if (tag === 'input' || tag === 'textarea') return;
+
+        // Space or 'k' toggles play/pause
+        if (e.code === 'Space' || e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            togglePlayPause();
+        }
+        // Left/Right arrows seek 5 seconds
+        if (e.code === 'ArrowLeft') {
+            e.preventDefault();
+            if (Number.isFinite(audioPlayer.currentTime)) {
+                const t = Math.max(0, audioPlayer.currentTime - 5);
+                audioPlayer.currentTime = t;
+                if (isCurrentTrackVideo) videoArtDisplay.currentTime = t;
+            }
+        }
+        if (e.code === 'ArrowRight') {
+            e.preventDefault();
+            const duration = Number.isFinite(audioPlayer.duration) ? audioPlayer.duration : (parseFloat(seekBar.max) || Infinity);
+            if (Number.isFinite(audioPlayer.currentTime)) {
+                const t = Math.min(duration, audioPlayer.currentTime + 5);
+                audioPlayer.currentTime = t;
+                if (isCurrentTrackVideo) videoArtDisplay.currentTime = t;
             }
         }
     });
